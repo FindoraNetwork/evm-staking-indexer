@@ -1,0 +1,5 @@
+evm_rpc = "web3 endopoint"
+staking = "staking contract address"
+reward = "reward contrat address"
+listen = "0.0.0.0:3000"
+db_url = "postgres://postgres:12345678@localhost/postgres"
