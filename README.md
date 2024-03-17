@@ -10,7 +10,7 @@ Modify the config file `indexer/config.toml`
 ## Scanner
 ### Set env vars
 ```
-export DATABASE_URL=postgres://{db_account}:{password}@{host}/{db}
+export DATABASE_URL=postgres://{user}:{password}@{host}/{db}
 ```
 Use `scanner/schema.sql` to create tables in DB.
 ### Run
