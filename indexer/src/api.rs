@@ -455,25 +455,16 @@ pub async fn get_sum(
 ) -> Result<Json<DelegatorSum>> {
     let mut pool = state.pool.acquire().await?;
 
-    let sql_delegate = r#"select sum(amount) as s from evm_e_delegation where delegator=$1"#;
-    let sql_undelegate = r#"select sum(amount) as s from evm_e_undelegation where delegator=$1"#;
-    let sql_claim = r#"select sum(amount) as s from evm_e_coinbase_mint where delegator=$1"#;
-
-    let sum_delegate: BigDecimal = sqlx::query(sql_delegate)
+    let sql_query = r#"select sum(amount) from evm_e_delegation where delegator=$1
+        union select sum(amount) from evm_e_undelegation where delegator=$1
+        union select sum(amount) from evm_e_coinbase_mint where delegator=$1"#;
+    let rows = sqlx::query(sql_query)
         .bind(&params.0.delegator)
-        .fetch_one(&mut *pool)
-        .await?
-        .try_get("s")?;
-    let sum_undelegate: BigDecimal = sqlx::query(sql_undelegate)
-        .bind(&params.0.delegator)
-        .fetch_one(&mut *pool)
-        .await?
-        .try_get("s")?;
-    let sum_claim: BigDecimal = sqlx::query(sql_claim)
-        .bind(&params.0.delegator)
-        .fetch_one(&mut *pool)
-        .await?
-        .try_get("s")?;
+        .fetch_all(&mut *pool)
+        .await?;
+    let sum_delegate: BigDecimal = rows[0].try_get("sum")?;
+    let sum_undelegate: BigDecimal = rows[1].try_get("sum")?;
+    let sum_claim: BigDecimal = rows[2].try_get("sum")?;
 
     Ok(Json(DelegatorSum {
         sum_delegate: sum_delegate.to_string(),
