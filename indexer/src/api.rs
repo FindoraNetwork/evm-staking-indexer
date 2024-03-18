@@ -519,17 +519,22 @@ pub async fn get_sum(
         .bind(addr)
         .fetch_one(&mut *pool)
         .await?
-        .try_get("s")?;
+        .try_get("s")
+        .unwrap_or(BigDecimal::from(0));
+
     let sum_undelegate: BigDecimal = sqlx::query(sql_undelegate)
         .bind(addr)
         .fetch_one(&mut *pool)
         .await?
-        .try_get("s")?;
+        .try_get("s")
+        .unwrap_or(BigDecimal::from(0));
+
     let sum_claim: BigDecimal = sqlx::query(sql_claim)
         .bind(addr)
         .fetch_one(&mut *pool)
         .await?
-        .try_get("s")?;
+        .try_get("s")
+        .unwrap_or(BigDecimal::from(0));
 
     Ok(Json(DelegatorSum {
         sum_delegate: sum_delegate.to_string(),
