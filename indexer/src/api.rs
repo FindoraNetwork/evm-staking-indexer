@@ -56,7 +56,7 @@ pub async fn get_claim_records(
         let block_num: i64 = r.try_get("block_num")?;
         let validator: String = r.try_get("validator")?;
         let delegator: String = r.try_get("delegator")?;
-        let amount: BigDecimal = r.try_get("amount")?;
+        let amount: BigDecimal = r.try_get("amount").unwrap_or_default();
         claims.push(ClaimRecord {
             tx,
             block_num,
@@ -128,7 +128,7 @@ pub async fn get_delegation_records(
         let block_num: i64 = r.try_get("block_num")?;
         let validator: String = r.try_get("validator")?;
         let delegator: String = r.try_get("delegator")?;
-        let amount: BigDecimal = r.try_get("amount")?;
+        let amount: BigDecimal = r.try_get("amount").unwrap_or_default();
         delegations.push(DelegationRecord {
             tx,
             block_num,
@@ -204,7 +204,7 @@ pub async fn get_undelegation_records(
         let validator: String = r.try_get("validator")?;
         let delegator: String = r.try_get("delegator")?;
         let unlock_time: i64 = r.try_get("unlock_time")?;
-        let amount: BigDecimal = r.try_get("amount")?;
+        let amount: BigDecimal = r.try_get("amount").unwrap_or_default();
         let op_type: i32 = r.try_get("op_type")?;
         undelegations.push(UndelegationRecord {
             tx,
@@ -495,10 +495,12 @@ pub async fn get_delegator_debt(
         Err(e) => Err(IndexerError::Custom(e.to_string())),
     }
 }
+
 #[derive(Serialize, Deserialize)]
 pub struct SumParams {
     pub delegator: String,
 }
+
 pub async fn get_sum(
     State(state): State<Arc<AppState>>,
     params: Query<SumParams>,
@@ -520,21 +522,21 @@ pub async fn get_sum(
         .fetch_one(&mut *pool)
         .await?
         .try_get("s")
-        .unwrap_or(BigDecimal::from(0));
+        .unwrap_or_default();
 
     let sum_undelegate: BigDecimal = sqlx::query(sql_undelegate)
         .bind(addr)
         .fetch_one(&mut *pool)
         .await?
         .try_get("s")
-        .unwrap_or(BigDecimal::from(0));
+        .unwrap_or_default();
 
     let sum_claim: BigDecimal = sqlx::query(sql_claim)
         .bind(addr)
         .fetch_one(&mut *pool)
         .await?
         .try_get("s")
-        .unwrap_or(BigDecimal::from(0));
+        .unwrap_or_default();
 
     Ok(Json(DelegatorSum {
         sum_delegate: sum_delegate.to_string(),
