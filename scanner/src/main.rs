@@ -62,7 +62,7 @@ async fn main() -> Result<()> {
 
     let rpc_url: Url = args.node.parse().expect("parse node url");
 
-    info!("Start syncing...");
+    info!("Starting syncing...");
     let scanner = Scanner::new(DEFAULT_RPC_RETRIES, num_cpus::get(), rpc_url, storage)
         .expect("failed to new scanner");
     let _ = scanner.run(start, interval).await;

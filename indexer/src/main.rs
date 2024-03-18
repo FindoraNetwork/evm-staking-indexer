@@ -18,7 +18,6 @@ use log::info;
 use serde::{Deserialize, Serialize};
 use sqlx::pool::PoolOptions;
 use sqlx::{PgPool, Pool, Postgres};
-use std::env;
 use std::fs::File;
 use std::io::Read;
 use std::sync::Arc;
@@ -57,7 +56,7 @@ async fn main() -> Result<()> {
     tracing_subscriber::fmt::init();
 
     let config = Config::new("./config.toml")?;
-    info!("listen at: {}", config.listen);
+    info!("listening at: {}", config.listen);
     info!("EVM RPC: {}", config.evm_rpc);
     info!("staking contract: {}", config.staking);
     info!("reward contract: {}", config.reward);
@@ -68,10 +67,9 @@ async fn main() -> Result<()> {
     let reward_addr: Address = config.reward.parse()?;
     let reward = RewardContract::new(reward_addr, Arc::new(provider));
 
-    let db_url = env::var("DATABASE_URL").expect("missing env var `DATABASE_URL`");
     let pool: Pool<Postgres> = PoolOptions::new()
         .max_connections(10)
-        .connect(db_url.as_str())
+        .connect(&config.db_url)
         .await
         .expect("can't connect to database");
     info!("Connecting db...ok");
