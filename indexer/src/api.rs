@@ -32,6 +32,11 @@ pub async fn get_claim_records(
     let page_size = params.page_size.unwrap_or(10);
 
     let (sql_total, sql_query) = if let Some(addr) = params.0.delegator {
+        let addr = if addr[0..2].eq("0x") {
+            &addr[2..]
+        } else {
+            &addr
+        };
         (
             format!("select count(*) as cnt from evm_e_coinbase_mint where delegator='{}'", addr),
             format!("select tx,block_num,validator,delegator,amount from evm_e_coinbase_mint where delegator='{}' order by block_num desc limit {} offset {}", addr, page_size, (page-1)*page_size)
@@ -86,6 +91,11 @@ pub async fn get_delegation_records(
 
     let (sql_total, sql_query) =
         if let Some(addr) = params.0.delegator {
+            let addr = if addr[0..2].eq("0x") {
+                &addr[2..]
+            } else {
+                &addr
+            };
             (
                 format!(
                     "select count(*) as cnt from evm_e_delegation where delegator='{}'",
@@ -152,6 +162,11 @@ pub async fn get_undelegation_records(
     let page_size = params.page_size.unwrap_or(10);
 
     let (sql_total, sql_query) = if let Some(addr) = params.0.delegator {
+        let addr = if addr[0..2].eq("0x") {
+            &addr[2..]
+        } else {
+            &addr
+        };
         (
             format!(
                 "select count(*) as cnt from evm_e_undelegation where delegator='{}'",
@@ -305,22 +320,27 @@ pub async fn get_delegators_of_validator(
     let page = params.page.unwrap_or(1);
     let page_size = params.page_size.unwrap_or(10);
 
-    let sql_total =
-        r#"
+    let sql_total = r#"
             select count(*) as cnt from (
                 select distinct d.delegator as dd,ud.delegator as udd, sum(d.amount) as dsm, sum(ud.amount) as udsm
                     from evm_e_delegation d left join evm_e_undelegation ud on d.delegator = ud.delegator
                 where d.validator = $1 group by d.delegator,ud.delegator) as subquery
             where udsm is null or dsm > udsm
         "#;
+
+    let addr = if params.0.validator[0..2].eq("0x") {
+        &params.0.validator[2..]
+    } else {
+        &params.0.validator
+    };
+
     let row = sqlx::query(sql_total)
-        .bind(&params.0.validator)
+        .bind(addr)
         .fetch_one(&mut *pool)
         .await?;
     let total: i64 = row.try_get("cnt")?;
 
-    let sql_query =
-        r#"
+    let sql_query = r#"
             select dd from (
                 select distinct d.delegator as dd,ud.delegator as udd, sum(d.amount) as dsm, sum(ud.amount) as udsm
                     from evm_e_delegation d left join evm_e_undelegation ud on d.delegator = ud.delegator
@@ -328,7 +348,7 @@ pub async fn get_delegators_of_validator(
             where udsm is null or dsm > udsm limit $2 offset $3
         "#;
     let rows = sqlx::query(sql_query)
-        .bind(&params.0.validator)
+        .bind(addr)
         .bind(page_size)
         .bind((page - 1) * page_size)
         .fetch_all(&mut *pool)
@@ -363,8 +383,13 @@ pub async fn get_validators_of_delegator(
     let page = params.page.unwrap_or(1);
     let page_size = params.page_size.unwrap_or(10);
 
-    let sql_total =
-        r#"
+    let addr = if params.0.delegator[0..2].eq("0x") {
+        &params.0.delegator[2..]
+    } else {
+        &params.0.delegator
+    };
+
+    let sql_total = r#"
             select count(*) as cnt from (
                 select distinct d.validator as dv,sum(d.amount) as dsm, sum(ud.amount) as udsm
                     from evm_e_delegation d
@@ -373,13 +398,12 @@ pub async fn get_validators_of_delegator(
             where dsm > udsm or udsm is null
         "#;
     let row = sqlx::query(sql_total)
-        .bind(&params.0.delegator)
+        .bind(addr)
         .fetch_one(&mut *pool)
         .await?;
     let total: i64 = row.try_get("cnt")?;
 
-    let sql_query =
-        r#"
+    let sql_query = r#"
             select dv from (
                 select distinct d.validator as dv,sum(d.amount) as dsm, sum(ud.amount) as udsm
                     from evm_e_delegation d
@@ -388,7 +412,7 @@ pub async fn get_validators_of_delegator(
             where dsm > udsm or udsm is null limit $2 offset $3
         "#;
     let rows = sqlx::query(sql_query)
-        .bind(&params.0.delegator)
+        .bind(addr)
         .bind(page_size)
         .bind((page - 1) * page_size)
         .fetch_all(&mut *pool)
@@ -481,22 +505,28 @@ pub async fn get_sum(
 ) -> Result<Json<DelegatorSum>> {
     let mut pool = state.pool.acquire().await?;
 
+    let addr = if params.0.delegator[0..2].eq("0x") {
+        &params.0.delegator[2..]
+    } else {
+        &params.0.delegator
+    };
+
     let sql_delegate = r#"select sum(amount) as s from evm_e_delegation where delegator=$1"#;
     let sql_undelegate = r#"select sum(amount) as s from evm_e_undelegation where delegator=$1"#;
     let sql_claim = r#"select sum(amount) as s from evm_e_coinbase_mint where delegator=$1"#;
 
     let sum_delegate: BigDecimal = sqlx::query(sql_delegate)
-        .bind(&params.0.delegator)
+        .bind(addr)
         .fetch_one(&mut *pool)
         .await?
         .try_get("s")?;
     let sum_undelegate: BigDecimal = sqlx::query(sql_undelegate)
-        .bind(&params.0.delegator)
+        .bind(addr)
         .fetch_one(&mut *pool)
         .await?
         .try_get("s")?;
     let sum_claim: BigDecimal = sqlx::query(sql_claim)
-        .bind(&params.delegator)
+        .bind(addr)
         .fetch_one(&mut *pool)
         .await?
         .try_get("s")?;
