@@ -243,7 +243,7 @@
 | page      | number | N  | 页码，默认1      |
 | page_size | number | N  | 页大小，默认10    |
 
-* Request:`http://localhost/api/validators?delegator=2c6af585b24a93912676f797b30dbc1b8f654ce4&page_1&page_size=20`
+* Request:`http://localhost/api/validators?delegator=2c6af585b24a93912676f797b30dbc1b8f654ce4&page=1&page_size=20`
 * Response:
 ```json
 {

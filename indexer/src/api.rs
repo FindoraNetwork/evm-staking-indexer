@@ -306,7 +306,13 @@ pub async fn get_delegators_of_validator(
     let page_size = params.page_size.unwrap_or(10);
 
     let sql_total =
-        r#"select count(distinct delegator) as cnt from evm_e_delegation where validator=$1"#;
+        r#"
+            select count(*) as cnt from (
+                select distinct d.delegator as dd,ud.delegator as udd, sum(d.amount) as dsm, sum(ud.amount) as udsm
+                    from evm_e_delegation d left join evm_e_undelegation ud on d.delegator = ud.delegator
+                where d.validator = $1 group by d.delegator,ud.delegator) as subquery
+            where udsm is null or dsm > udsm
+        "#;
     let row = sqlx::query(sql_total)
         .bind(&params.0.validator)
         .fetch_one(&mut *pool)
@@ -314,7 +320,13 @@ pub async fn get_delegators_of_validator(
     let total: i64 = row.try_get("cnt")?;
 
     let sql_query =
-        r#"select distinct delegator from evm_e_delegation where validator=$1 limit $2 offset $3"#;
+        r#"
+            select dd from (
+                select distinct d.delegator as dd,ud.delegator as udd, sum(d.amount) as dsm, sum(ud.amount) as udsm
+                    from evm_e_delegation d left join evm_e_undelegation ud on d.delegator = ud.delegator
+                where d.validator = $1 group by d.delegator,ud.delegator) as subquery
+            where udsm is null or dsm > udsm limit $2 offset $3
+        "#;
     let rows = sqlx::query(sql_query)
         .bind(&params.0.validator)
         .bind(page_size)
@@ -324,7 +336,7 @@ pub async fn get_delegators_of_validator(
 
     let mut delegators: Vec<String> = vec![];
     for r in rows {
-        let d: String = r.try_get("delegator")?;
+        let d: String = r.try_get("dd")?;
         delegators.push(d)
     }
 
@@ -352,7 +364,14 @@ pub async fn get_validators_of_delegator(
     let page_size = params.page_size.unwrap_or(10);
 
     let sql_total =
-        r#"select count(distinct validator) as cnt from evm_e_delegation where delegator=$1"#;
+        r#"
+            select count(*) as cnt from (
+                select distinct d.validator as dv,sum(d.amount) as dsm, sum(ud.amount) as udsm
+                    from evm_e_delegation d
+                    left join evm_e_undelegation ud on d.delegator = ud.delegator
+                where d.delegator=$1 group by d.validator,ud.validator) as subquery
+            where dsm > udsm or udsm is null
+        "#;
     let row = sqlx::query(sql_total)
         .bind(&params.0.delegator)
         .fetch_one(&mut *pool)
@@ -360,7 +379,14 @@ pub async fn get_validators_of_delegator(
     let total: i64 = row.try_get("cnt")?;
 
     let sql_query =
-        r#"select distinct validator from evm_e_delegation where delegator=$1 limit $2 offset $3"#;
+        r#"
+            select dv from (
+                select distinct d.validator as dv,sum(d.amount) as dsm, sum(ud.amount) as udsm
+                    from evm_e_delegation d
+                    left join evm_e_undelegation ud on d.delegator = ud.delegator
+                where d.delegator=$1 group by d.validator,ud.validator) as subquery
+            where dsm > udsm or udsm is null limit $2 offset $3
+        "#;
     let rows = sqlx::query(sql_query)
         .bind(&params.0.delegator)
         .bind(page_size)
@@ -370,7 +396,7 @@ pub async fn get_validators_of_delegator(
 
     let mut validators: Vec<String> = vec![];
     for r in rows {
-        let d: String = r.try_get("validator")?;
+        let d: String = r.try_get("dv")?;
         validators.push(d);
     }
 
