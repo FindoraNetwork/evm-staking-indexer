@@ -100,3 +100,16 @@ pub struct ClaimRecord {
     pub delegator: String,
     pub amount: String,
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct StakeRecord {
+    pub tx: String,
+    pub block_num: i64,
+    pub validator: String,
+    pub public_key: String,
+    pub ty: i32,
+    pub staker: String,
+    pub amount: String,
+    pub memo: String,
+    pub rate: String,
+}

@@ -4,8 +4,9 @@ mod types;
 
 use crate::api::{
     get_claim_records, get_delegation_records, get_delegator_bound, get_delegator_debt,
-    get_delegator_reward, get_delegators_of_validator, get_sum, get_undelegation_records,
-    get_validator_detail, get_validator_status, get_validators, get_validators_of_delegator,
+    get_delegator_reward, get_delegators_of_validator, get_stake_records, get_sum,
+    get_undelegation_records, get_validator_detail, get_validator_status, get_validators,
+    get_validators_of_delegator,
 };
 use axum::http::Method;
 use axum::routing::get;
@@ -88,6 +89,7 @@ async fn main() -> Result<()> {
         .route("/api/validator/list", get(get_validators))
         .route("/api/validator/detail", get(get_validator_detail))
         .route("/api/validator/status", get(get_validator_status))
+        .route("/api/stakes", get(get_stake_records))
         .route("/api/claims", get(get_claim_records))
         .route("/api/delegations", get(get_delegation_records))
         .route("/api/undelegations", get(get_undelegation_records))

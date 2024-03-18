@@ -1,7 +1,7 @@
 use crate::error::{IndexerError, Result};
 use crate::types::{
     ClaimRecord, DelegationRecord, DelegatorDebt, DelegatorInfo, DelegatorReward, DelegatorSum,
-    QueryResult, UndelegationRecord, ValidatorDataResponse, ValidatorResponse,
+    QueryResult, StakeRecord, UndelegationRecord, ValidatorDataResponse, ValidatorResponse,
     ValidatorStatusResponse,
 };
 use crate::AppState;
@@ -15,6 +15,76 @@ use sqlx::types::BigDecimal;
 use sqlx::Row;
 use std::str::FromStr;
 use std::sync::Arc;
+
+#[derive(Serialize, Deserialize)]
+pub struct StakeRecordParams {
+    pub validator: Option<String>,
+    pub staker: Option<String>,
+    pub page: Option<i32>,
+    pub page_size: Option<i32>,
+}
+
+pub async fn get_stake_records(
+    State(state): State<Arc<AppState>>,
+    params: Query<StakeRecordParams>,
+) -> Result<Json<QueryResult<Vec<StakeRecord>>>> {
+    let mut pool = state.pool.acquire().await?;
+    let page = params.page.unwrap_or(1);
+    let page_size = params.page_size.unwrap_or(10);
+
+    let (sql_total, sql_query) = if let Some(addr) = params.0.validator {
+        let addr = if addr[0..2].eq("0x") {
+            &addr[2..]
+        } else {
+            &addr
+        };
+        (
+            format!("select count(*) as cnt from evm_e_stake where validator='{}'", addr),
+            format!("select tx,block_num,validator,public_key,ty,staker,amount,memo,rate from evm_e_stake where validator='{}' order by block_num desc limit {} offset {}", addr, page_size, (page-1)*page_size)
+        )
+    } else {
+        (
+            "select count(*) as cnt from evm_e_stake".to_string(),
+            format!("select tx,block_num,validator,public_key,ty,staker,amount,memo,rate from evm_e_stake order by block_num desc limit {} offset {}",page_size, (page-1)*page_size)
+        )
+    };
+
+    let row = sqlx::query(&sql_total).fetch_one(&mut *pool).await?;
+    let total: i64 = row.try_get("cnt")?;
+
+    let rows = sqlx::query(&sql_query).fetch_all(&mut *pool).await?;
+    let mut stakes: Vec<StakeRecord> = vec![];
+    for r in rows {
+        let tx: String = r.try_get("tx")?;
+        let block_num: i64 = r.try_get("block_num")?;
+        let validator: String = r.try_get("validator")?;
+        let public_key: String = r.try_get("public_key")?;
+        let ty: i32 = r.try_get("ty")?;
+        let staker: String = r.try_get("staker")?;
+        let amount: BigDecimal = r.try_get("amount").unwrap_or_default();
+        let memo: String = r.try_get("memo")?;
+        let rate: BigDecimal = r.try_get("rate").unwrap_or_default();
+
+        stakes.push(StakeRecord {
+            tx,
+            block_num,
+            validator,
+            public_key,
+            ty,
+            staker,
+            amount: amount.to_string(),
+            memo,
+            rate: rate.to_string(),
+        })
+    }
+
+    Ok(Json(QueryResult {
+        total,
+        page,
+        page_size,
+        data: stakes,
+    }))
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct ClaimRecordsParams {
