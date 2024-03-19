@@ -22,13 +22,16 @@ const DEFAULT_RPC_RETRIES: usize = 3;
 #[derive(Parser, Debug)]
 struct Args {
     /// Node RPC
-    #[arg(short, long)]
+    #[arg(long)]
     pub node: String,
+    /// Pull single block
+    #[arg(long)]
+    pub single: bool,
     /// Block height to start scanning
-    #[arg(short, long)]
+    #[arg(long)]
     pub start: Option<u64>,
     /// Interval of scanning in seconds
-    #[arg(short, long)]
+    #[arg(long)]
     pub interval: Option<u64>,
 }
 
@@ -65,7 +68,7 @@ async fn main() -> Result<()> {
     info!("Starting syncing...");
     let scanner = Scanner::new(DEFAULT_RPC_RETRIES, num_cpus::get(), rpc_url, storage)
         .expect("failed to new scanner");
-    let _ = scanner.run(start, interval).await;
+    let _ = scanner.run(start, interval, args.single).await;
 
     Ok(())
 }

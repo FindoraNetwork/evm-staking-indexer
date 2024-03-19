@@ -102,7 +102,6 @@ impl RpcCaller {
         while retries < self.retries {
             match self.rpc.get_block_by_height(height).await {
                 Ok(block) => {
-                    //info!("block_hash: {}, height: {}", block.block_id.hash, height);
                     self.process_block(block).await?;
                     return Ok(());
                 }
@@ -655,6 +654,14 @@ impl Scanner {
         })
     }
 
+    pub async fn single_scan(&self, height: u64) -> Result<()> {
+        info!("Syncing block: {}", height);
+        self.caller.get_block_retried(height).await?;
+        self.caller.storage.upsert_tip(height as i64).await?;
+        info!("Syncing block: {} complete", height);
+        Ok(())
+    }
+
     pub async fn range_scan(&self, start: u64, end: u64) -> Result<u64> {
         info!("Syncing [{},{}) ...", start, end);
         let concurrency = self.caller.threads; //how many spawned.
@@ -701,39 +708,46 @@ impl Scanner {
         Ok(succeed_cnt.load(Ordering::Acquire))
     }
 
-    pub async fn run(&self, start: u64, interval: Duration) -> Result<()> {
-        let batch = (4 * self.caller.threads) as u64;
-        let mut height = start;
-
-        info!("Fast syncing...");
-        loop {
-            let cnt = self.range_scan(height, height + batch).await?;
-            if cnt == batch {
-                height += batch;
-            } else {
-                break;
+    pub async fn run(&self, start: u64, interval: Duration, single: bool) -> Result<()> {
+        match single {
+            true => {
+                info!("Single syncing...");
+                self.single_scan(start).await
             }
-        }
-        info!("Fast syncing complete.");
-        loop {
-            if let Ok(h) = self.caller.storage.get_tip().await {
-                height = h as u64 + 1;
-            }
+            false => {
+                let mut height = start;
+                let batch = (4 * self.caller.threads) as u64;
+                info!("Fast syncing...");
+                loop {
+                    let cnt = self.range_scan(height, height + batch).await?;
+                    if cnt == batch {
+                        height += batch;
+                    } else {
+                        break;
+                    }
+                }
+                info!("Fast syncing complete.");
+                loop {
+                    if let Ok(h) = self.caller.storage.get_tip().await {
+                        height = h as u64 + 1;
+                    }
 
-            match self.caller.get_block_retried(height).await {
-                Ok(_) => {
-                    info!("Get block {} succeed", height);
-                    self.caller.storage.upsert_tip(height as i64).await?;
-                }
-                Err(ScannerError::BlockNotFound(height)) => {
-                    error!("Block {} not found", height)
-                }
-                Err(e) => {
-                    error!("Get block {} error: {:?}", height, e);
+                    match self.caller.get_block_retried(height).await {
+                        Ok(_) => {
+                            info!("Get block {} succeed", height);
+                            self.caller.storage.upsert_tip(height as i64).await?;
+                        }
+                        Err(ScannerError::BlockNotFound(height)) => {
+                            error!("Block {} not found", height)
+                        }
+                        Err(e) => {
+                            error!("Get block {} error: {:?}", height, e);
+                        }
+                    }
+
+                    tokio::time::sleep(interval).await;
                 }
             }
-
-            tokio::time::sleep(interval).await;
         }
     }
 }

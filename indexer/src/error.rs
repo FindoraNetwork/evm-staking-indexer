@@ -5,17 +5,18 @@ use axum::response::{IntoResponse, Response};
 pub enum IndexerError {
     Custom(String),
     DBError(sqlx::Error),
-    RdsError(redis::RedisError),
     IOError(std::io::Error),
     TomlDeError(toml::de::Error),
     HexError(rustc_hex::FromHexError),
     ParseUrlError(url::ParseError),
 }
+
 impl From<String> for IndexerError {
     fn from(e: String) -> Self {
         IndexerError::Custom(e)
     }
 }
+
 impl From<url::ParseError> for IndexerError {
     fn from(e: url::ParseError) -> Self {
         IndexerError::ParseUrlError(e)
@@ -46,12 +47,6 @@ impl From<sqlx::Error> for IndexerError {
     }
 }
 
-impl From<redis::RedisError> for IndexerError {
-    fn from(e: redis::RedisError) -> Self {
-        IndexerError::RdsError(e)
-    }
-}
-
 pub type Result<T> = core::result::Result<T, IndexerError>;
 
 impl IntoResponse for IndexerError {
@@ -59,7 +54,6 @@ impl IntoResponse for IndexerError {
         let err_msg = match self {
             IndexerError::Custom(e) => e,
             IndexerError::DBError(e) => e.to_string(),
-            IndexerError::RdsError(e) => e.to_string(),
             IndexerError::IOError(e) => e.to_string(),
             IndexerError::TomlDeError(e) => e.to_string(),
             IndexerError::HexError(e) => e.to_string(),
