@@ -14,7 +14,8 @@
 * [3.1 统计delegate,undelegate,claim总量](#3.1)
 
 <h3 id="1.1">1.1 获取Validator集合</h3>
-* `GET /api/valiators` 
+
+* `GET /api/valiators`
 * 参数 
 
 | 参数        | 类型     | 必传 | 说明       |
@@ -146,7 +147,8 @@
 ```
 
 <h3 id="1.2">1.2 获取validator最近20笔质押变化</h3>
-* `GET /api/diff/latest` 
+
+* `GET /api/diff/latest`
 * 参数 
 
 | 参数        | 类型     | 必传 | 说明          |
@@ -247,6 +249,7 @@
 ]
 ```
 <h3 id="1.3">1.3 获取validator的delegate记录</h3>
+
 * `GET /api/records/delegate`  
 * 参数 
 
@@ -304,6 +307,7 @@
 ```
 
 <h3 id="1.4">1.4 获取validator的undelegate记录</h3>
+
 * `GET /api/records/undelegate`  
 * 参数  
 
@@ -342,6 +346,7 @@
 
 
 <h3 id="2.1">2.1 获取bound数量</h3>
+
 * `GET /api/bound` 
 * 参数 
 
@@ -361,6 +366,7 @@
 
 
 <h3 id="2.2">2.2 获取reward数量</h3>
+
 * `GET /api/reward` 
 * 参数 
 
@@ -377,6 +383,7 @@
 ```
 
 <h3 id="2.3">2.3 获取debt数量</h3>
+
 * `GET /api/debt` 
 * 参数 
 
@@ -394,6 +401,7 @@
 ```
 
 <h3 id="3.1">3.1 获取debt数量</h3>
+
 * `GET /api/sum` 
 * 参数 
 
