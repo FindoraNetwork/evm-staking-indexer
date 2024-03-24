@@ -177,19 +177,6 @@ create trigger undelegate_trigger
     on evm_undelegations
     for each row execute procedure put_undelegate();
 
--- create or replace function put_validator() returns trigger as $$
---     begin
---         insert into evm_validators select nextval('evm_validators_id_seq'),new.block_num,new.validator,new.staker,true,false,0,0,0;
---         return null;
---     end;
--- $$ language plpgsql;
---
--- create trigger validator_trigger
---     after insert or update
---     on evm_stakes
---     for each row execute procedure put_validator();
-
-
 create or replace function update_validator() returns trigger as $$
     begin
         update evm_stakes set memo=new.memo,rate=new.rate where validator=new.validator;
