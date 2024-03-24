@@ -1,280 +1,348 @@
-# API
-### `GET /api/validator/list`
-* 功能：获取当前validator集合
-* 无参数
-* Request: `http://localhost/api/validator/list`
-* Response:
-```json
-  [
-    {
-      "address": "400c0f623f71c8bfeb6b4ec71b54624925c1a6c6",
-      "power": "235520707012010263794755",
-      "public_key": "0xc3239e8c68ffa29572d22d7de7ddbad7d434706b19d13318e01d7ff216a6593f",
-      "public_key_type": 2
-    },
-    {
-      "address": "ccac2728809428d8d2967b3d9093d6a989df072a",
-      "power": "665619655200714635792002",
-      "public_key": "0xf7299c12de8a267366b86a67b6b9465486a8ad17b6db2a23ee85824936342999",
-      "public_key_type": 2
-    },
-    {
-      "address": "9aee1a3ab861102f3039a0f2a55b89614f1968d8",
-      "power": "266499680081979530729436",
-      "public_key": "0x83a4307116025fa20474156bfcffe9d5fe324bf208971b96b567828f1fff9f62",
-      "public_key_type": 2
-    }
-  ]
-```
+# Evm Staking Indexer API Spec
+## [Validator](#1)
+* [1.1 获取Validator集合](#1.1)
+* [1.2 获取validator最近20笔质押变化](#1.2)
+* [1.3 获取validator的delegate记录](#1.3)
+* [1.4 获取validator的undelegate记录](#1.4)
 
-### `GET /api/validator/detail`
-* 功能：获取validator的详细信息
+## [Contract](#2)
+* [2.1 获取bound数量](#2.1)
+* [2.2 获取reward数量](#2.2)
+* [2.3 获取debt数量](#2.3)
+
+## [Other](#3)
+* [3.1 统计delegate,undelegate,claim总量](#3.1)
+
+<h3 id="1.1">1.1 获取Validator集合</h3>
+* `GET /api/valiators`
 * 参数
 
-| 参数        | 类型     | 必传 | 说明          |
-|-----------|--------|----|-------------|
-| validator | string | Y  | validator地址 |
+| 参数        | 类型     | 必传 | 说明       |
+|-----------|--------|----|----------|
+| online    | bool   | N  | 过滤active |
+| offline   | bool   | N  | 过滤jailed |
+| page      | number | N  | 页码，默认1   |
+| page_size | number | N  | 页大小，默认10 |
 
-* Request: `http://localhost/api/validator/detail?validator=400c0f623f71c8bfeb6b4ec71b54624925c1a6c6`  
-* Response:
-  ```json
-  {
-    "public_key": "0xc3239e8c68ffa29572d22d7de7ddbad7d434706b19d13318e01d7ff216a6593f",
-    "public_key_type": 2,
-    "rate": "500000",
-    "staker": "0x9407580f89e7ade491844bb387cae4bf71c40d6f",
-    "power": "235520707012010263794755",
-    "total_unbound_amount": "0",
-    "punish_rate": "999959540818290156",
-    "begin_block": "4636000"
-  }
-  ```
-
-### `GET /api/validator/status`
-* 功能：获取validator的状态
-*  参数
-
-| 参数        | 类型     | 必传 | 说明          |
-|-----------|--------|----|-------------|
-| validator | string | Y  | validator地址 |
-
-* Request: `http://localhost/api/validator/status?validator=400c0f623f71c8bfeb6b4ec71b54624925c1a6c6`
-* Response:
+* Request: `http://localhost/api/validators?online=true&page=1&page_size=5`
+* Response: 返回结果按power（质押总量）降序排列
 ```json
-  {
-    "heap_index_off1": "1",
-    "is_active": true,
+{
+  "total": 31,
+  "page": 1,
+  "page_size": 5,
+  "data": [{
+    "validator": "0x09ef1db6b67d1cbf7eba6bd9b204611848993df7",
+    "staker": "0x307836383239e280a638326564",
+    "active": true,
     "jailed": false,
-    "unjail_datetime": 1697279406,
-    "should_vote": 977,
-    "voted": 974
-  }
-```
-### `GET /api/claims`
-* 功能：获取地址提取奖励记录，若不指定delegator，则返回任意地址的提取记录
-* 参数
-
-| 参数        | 类型     | 必传 | 说明          |
-|-----------|--------|----|-------------|
-| delegator | string | N  | delegator地址 |
-| page      | number | N  | 页码，默认1      |
-| page_size | number | N  | 页大小，默认10    |
-
-* Request:`http://localhost/api/claims?delegator=2d15d52cc138ffb322b732239cd3630735abac88&page=1&page_size=10`
-* Response:
-```json
-{
-"total": 6,
-"page": 1,
-"page_size": 3,
-"data": [
+    "should_vote": 710,
+    "voted": 710,
+    "pubkey": "0xbee5782b5b004b4176e7991cec5819c4aebfae63ff9cc250dea602df3a8c382f",
+    "pubkey_type": 2,
+    "rate": "0",
+    "power": "152878110978597052092473766",
+    "unbound_amount": "152807356870999999999998",
+    "punish_rate": "999999870000007789",
+    "begin_block": 4636000,
+    "unjail_time": 0,
+    "memo": {
+      "desc": "ACEcryptory, the ACE node operator! 0% fee for the first 10 epochs !",
+      "logo": "https://drive.google.com/file/d/18blSXpl7KxtzzUWZlC6qsyEk2X13UoNo/view?usp=sharing",
+      "name": "ACEcryptory",
+      "website": "http://www.acecryptory.io/"
+    }
+  },
     {
-      "tx": "281d962bdef2919032dfd704c9babffda20549e5ba58a3ac2cba2802476f91e7",
-      "block_num": 4731288,
-      "validator": "000e33ab7471186f3b1de9fc08bb9c480f453590",
-      "delegator": "2d15d52cc138ffb322b732239cd3630735abac88",
-      "amount": "697734392375302244"
+      "validator": "0x544fec0d957816c880f1ac4c4ca239feede0ac70",
+      "staker": "0x307839373161e280a633656338",
+      "active": true,
+      "jailed": false,
+      "should_vote": 710,
+      "voted": 710,
+      "pubkey": "0xd130582f29b5651854282c80b76c99cf33141fb63f10a69c4a40fa462b94d645",
+      "pubkey_type": 2,
+      "rate": "0",
+      "power": "82649831157500582388751821",
+      "unbound_amount": "2821110534212999999999999",
+      "punish_rate": "999999880000006590",
+      "begin_block": 4636000,
+      "unjail_time": 0,
+      "memo": {
+        "desc": "",
+        "logo": "",
+        "name": "51%crypto",
+        "website": ""
+      }
     },
     {
-      "tx": "281d962bdef2919032dfd704c9babffda20549e5ba58a3ac2cba2802476f91e7",
-      "block_num": 4731288,
-      "validator": "00121f5cfd8d95f8c194ed4ccff47bbd1904b791",
-      "delegator": "2d15d52cc138ffb322b732239cd3630735abac88",
-      "amount": "34242028226633"
+      "validator": "0x61ed9d4018b10e9b007d200725cca0087544268f",
+      "staker": "0x307862323362e280a630383539",
+      "active": true,
+      "jailed": false,
+      "should_vote": 710,
+      "voted": 710,
+      "pubkey": "0x1cf1c137d0e58a9e95310d35ded8f28bd8407d453ce820b34249cf1f92765d99",
+      "pubkey_type": 2,
+      "rate": "10000",
+      "power": "70432535614312586587910445",
+      "unbound_amount": "0",
+      "punish_rate": "999999820000015284",
+      "begin_block": 4636000,
+      "unjail_time": 0,
+      "memo": {
+        "desc": "",
+        "logo": "",
+        "name": "Fimgent",
+        "website": ""
+      }
     },
     {
-      "tx": "281d962bdef2919032dfd704c9babffda20549e5ba58a3ac2cba2802476f91e7",
-      "block_num": 4731288,
-      "validator": "09ef1db6b67d1cbf7eba6bd9b204611848993df7",
-      "delegator": "2d15d52cc138ffb322b732239cd3630735abac88",
-      "amount": "1064514338839250640"
+      "validator": "0x805b1f87212164fd1db64b8ed63a8f2c42aac647",
+      "staker": "0x307833656465e280a630343831",
+      "active": true,
+      "jailed": false,
+      "should_vote": 710,
+      "voted": 710,
+      "pubkey": "0xb2b977cd1c0dab54eed96590bebbdee45530ef9d962f7a257d95220ca70563f3",
+      "pubkey_type": 2,
+      "rate": "0",
+      "power": "54482820810059682678324915",
+      "unbound_amount": "0",
+      "punish_rate": "997401741319268055",
+      "begin_block": 4636000,
+      "unjail_time": 1698798611,
+      "memo": {
+        "desc": "We are Jungle Farmer from India, Your trusted delegation partner, come and stake with us.",
+        "logo": "https://drive.google.com/file/d/1otsEJ0EKWfRff5yjxYycijokRXhsTwAk/view?usp=sharing",
+        "name": "Jungle Farmer",
+        "website": ""
+      }
+    },
+    {
+      "validator": "0x5c97ee9b91d90b332813078957e3a96b304791b4",
+      "staker": "0x307836353630e280a638613832",
+      "active": true,
+      "jailed": false,
+      "should_vote": 710,
+      "voted": 710,
+      "pubkey": "0x7a5af3a10dda2a41fed36dd76032b6540bb35019078dc0e16f3adf999397e0ce",
+      "pubkey_type": 2,
+      "rate": "10000",
+      "power": "48717022993311051119131086",
+      "unbound_amount": "0",
+      "punish_rate": "999999880000006590",
+      "begin_block": 4636000,
+      "unjail_time": 0,
+      "memo": {
+        "desc": "Managed by a group of talents in blockchain industry, Nodest01 strives to help community engagement through providing education and the best service possible by focusing on relationships over transactions.",
+        "logo": "https://drive.google.com/drive/folders/16XJz2179RIkEaoqQnDSJXvBbmK2d8D5I",
+        "name": "Nodest01",
+        "website": "https://twitter.com/nodest01"
+      }
     }
   ]
 }
 ```
 
-### `GET /api/delegations`
-* 功能：获取地址的delegate记录，若不指定delegator，则返回任意地址的记录
-* 参数
-
-| 参数        | 类型     | 必传 | 说明          |
-|-----------|--------|----|-------------|
-| delegator | string | N  | delegator地址 |
-| page      | number | N  | 页码，默认1      |
-| page_size | number | N  | 页大小，默认10    |
-
-* Request: `http://localhost/api/delegations?delegator=2d15d52cc138ffb322b732239cd3630735abac88&page=1&page_size=10`  
-* Response:
-```json
-{
-  "total": 2,
-  "page": 1,
-  "page_size": 10,
-  "data": [
-    {
-      "tx": "b98281e3ad708023bcf67f384289361ed07568447fcfc25e9184482e04fe81c9",
-      "block_num": 4709313,
-      "validator": "2a75d9238dbbf14891f7bffbba7ef86ca0e98cc9",
-      "delegator": "2d15d52cc138ffb322b732239cd3630735abac88",
-      "amount": "3000000000000000000"
-    },
-    {
-      "tx": "70febc1d66c96ca3c9207c2a0cdefc4558354107fc9a2767aa4493f18362efee",
-      "block_num": 4704494,
-      "validator": "d518c4f95a3f39ed853a2614566897c4ad5a008f",
-      "delegator": "2d15d52cc138ffb322b732239cd3630735abac88",
-      "amount": "1000000000000000000"
-    }
-  ]
-}
-```
-
-### `GET /api/undelegations`
-* 功能：获取地址的undelegate记录，若不指定delegator，则返回任意地址的记录
-* 参数
-
-| 参数        | 类型     | 必传 | 说明          |
-|-----------|--------|----|-------------|
-| delegator | string | N  | delegator地址 |
-| page      | number | N  | 页码，默认1      |
-| page_size | number | N  | 页大小，默认10    |
-
-* Request: `http://localhost/api/undelegations?delegator=836a7c6e4ec6399365d4f27aefeb277345e2a655&page=1&page_size=10`
-* Response:
-```json
-{
-  "total": 2,
-  "page": 1,
-  "page_size": 10,
-  "data": [
-    {
-      "tx": "21c4c1d0870d9c12b0cde438fc51d1edce987c0937509d858c2930e2d3ed30a8",
-      "block_num": 4718062,
-      "index": 96,
-      "validator": "3560fd0632b4e2f4f16490bbd9cd0a763045bf35",
-      "delegator": "836a7c6e4ec6399365d4f27aefeb277345e2a655",
-      "unlock_time": 1697106621,
-      "amount": "999926920000000000000",
-      "op_type": 0
-    },
-    {
-      "tx": "6e814c6f13030a84c9f4d24caa0ea7db1d3a7fe2f50334ca6629d04d0a4b12ff",
-      "block_num": 4718018,
-      "index": 56,
-      "validator": "69e2b6c4c1122172e69af48e0aec36b7f7c8005a",
-      "delegator": "836a7c6e4ec6399365d4f27aefeb277345e2a655",
-      "unlock_time": 1696386941,
-      "amount": "4997408848000000000000",
-      "op_type": 0
-    }
-  ]
-}
-```
-
-### `GET /api/delegators`
-* 功能：获取质押到该validator的delegator集合
+<h3 id="1.2">1.2 获取validator最近20笔质押变化</h3>
+* `GET /api/diff/latest`
 * 参数
 
 | 参数        | 类型     | 必传 | 说明          |
 |-----------|--------|----|-------------|
 | validator | string | Y  | validator地址 |
-| page      | number | N  | 页码，默认1      |
-| page_size | number | N  | 页大小，默认10    |
 
-* Request:`http://localhost/api/delegators?validator=09ef1db6b67d1cbf7eba6bd9b204611848993df7&page=1&page_size=20`
-* Response:
+* Request: `http://localhost/api/diff/latest?validator=0xc8d2d4ff0b882243f82c1fb20574c81e4c866e72`
+* Response: 
+  * 按高度降序排列
+  * 返回值中`amount`，非零正数表示delegate的数量，非零负数表示undelegate的数量
+  * 如果`amount`是0，则用`op`区分，`op`为零表示delegate，非零表示undelegate
 ```json
+[
   {
-  "total": 411,
-  "page": 1,
-  "page_size": 20,
-  "data": [
-    "1c33fe72bee0599087d33940bc70c246e4897c17",
-    "ee4ab7c2214e4059e6c510977d248b821c9139d2",
-    "c5409347b0c3ef70d8a964ca286e9d7b4c66c49e",
-    "7380f6c99ae40ece405fd5b55b4405ca5ab8bc4a",
-    "fc34af86793be1686b087c61ec4dfc08e11ab377",
-    "f9787a5dfb0c02432374fec2c033b1011756c2d0",
-    "7f4c41775305853a3fe80e607b27659534cc3f48",
-    "6751c301ac6333dacb6a1dbdb5dc5d6d9d31de4e",
-    "e6032af5acd363377be84efc55b34878a245c5cd",
-    "3eb961e5902a5c8eb197091089bce2a9114b4d71",
-    "63d60979f55740412e1a11dae70c393bebc25baf",
-    "f8d379993517b51a59c6cc9badfa959411f65182",
-    "585d29ebf14c2bcf0ebd0df1aadab3fb7c0a7d1f",
-    "fc7e9b7b1d62bf06a99bd5bb61e1119950ea7f15",
-    "f61bdcee6a66a66cfa2a3b0c952e38968575fddd",
-    "fc6c6487c4499a22107df5a4aaf9d6d2607405d3",
-    "7df23486f82e4669051ace292cf5cb69f0808304",
-    "3513f4ed28af9a2f16acb80966abaff80262b54e",
-    "023d0ba3582b37fb973d8c56894ab3507e4551a9",
-    "352c847ecfd3b326bca8c2c6e33fcddd6cf5c0fd"
-  ]
-}
+    "block_num": 4636000,
+    "total": "9087659109077000000000000",
+    "delegator": "0x52f99e02d012ead8fd060dcf1c2ef43e5c327b2d",
+    "amount": "27943311200000000000000",
+    "op": 0
+  },
+  {
+    "block_num": 4636000,
+    "total": "9059715797877000000000000",
+    "delegator": "0x1e6cd3ae04429e750d5757c82591d21658b5e7f8",
+    "amount": "9979764246000000000000",
+    "op": 0
+  },
+  {
+    "block_num": 4636000,
+    "total": "9049736033631000000000000",
+    "delegator": "0x653318801c8c5c36048895211e0863b2f6315b36",
+    "amount": "8795121189790000000000000",
+    "op": 0
+  },
+  {
+    "block_num": 4636000,
+    "total": "254614843841000000000000",
+    "delegator": "0x662d6a5b3aadf0c4551750672215d4c2d658420a",
+    "amount": "15000000000000000000000",
+    "op": 0
+  },
+  {
+    "block_num": 4636000,
+    "total": "239614843841000000000000",
+    "delegator": "0x001bff14cd00420680e42a36a8493c4363cb97f1",
+    "amount": "190093498478000000000000",
+    "op": 0
+  },
+  {
+    "block_num": 4636000,
+    "total": "49521345363000000000000",
+    "delegator": "0x4476cefb5d2f8ea046e20b8443591348905c79a5",
+    "amount": "0",
+    "op": 0
+  },
+  {
+    "block_num": 4636000,
+    "total": "49521345363000000000000",
+    "delegator": "0xe2bb4b93ad94d90fea5f06a327563342c6de967b",
+    "amount": "0",
+    "op": 0
+  },
+  {
+    "block_num": 4636000,
+    "total": "49521345363000000000000",
+    "delegator": "0xe4e2ce2f69f3ab481f34a2ab66e1dd9c9e55346e",
+    "amount": "0",
+    "op": 0
+  },
+  {
+    "block_num": 4636000,
+    "total": "49521345363000000000000",
+    "delegator": "0x19da6ead98c462be78f8d458ba45c98c29e8adb3",
+    "amount": "13380219379000000000000",
+    "op": 0
+  },
+  {
+    "block_num": 4636000,
+    "total": "36141125984000000000000",
+    "delegator": "0xc8d2d4ff0b882243f82c1fb20574c81e4c866e72",
+    "amount": "31074614192000000000000",
+    "op": 0
+  },
+  {
+    "block_num": 4636000,
+    "total": "5066511792000000000000",
+    "delegator": "0x3e6689e50a6d1610321b2c01f2c7d7742c586b24",
+    "amount": "6766508222000000000000",
+    "op": 0
+  },
+  {
+    "block_num": 4636000,
+    "total": "-1699996430000000000000",
+    "delegator": "0xe4e2ce2f69f3ab481f34a2ab66e1dd9c9e55346e",
+    "amount": "-1699996430000000000000",
+    "op": 1
+  }
+]
 ```
-
-### `GET /api/validators`
-* 功能：获取delegator所质押的validator集合
+<h3 id="1.3">1.3 获取validator的delegate记录</h3>
+* `GET /api/records/delegate`
 * 参数
 
-| 参数        | 类型     | 必传 | 说明          |
-|-----------|--------|----|-------------|
-| delegator | string | Y  | delegator地址 |
-| page      | number | N  | 页码，默认1      |
-| page_size | number | N  | 页大小，默认10    |
+| 参数        | 类型     | 必传 | 说明                       |
+|-----------|--------|----|--------------------------|
+| validator | string | N  | validator地址，不传则返回所有的质押记录 |
+| page      | number | N  | 页码，默认1                   |
+| page_size | number | N  | 页大小，默认10                 |
 
-* Request:`http://localhost/api/validators?delegator=2c6af585b24a93912676f797b30dbc1b8f654ce4&page=1&page_size=20`
+* Request: `http://localhost/api/records/delegate?validator=0xc8d2d4ff0b882243f82c1fb20574c81e4c866e72&page=1&page_size=5`
 * Response:
+  * 按`timestamp`降序排列
 ```json
 {
-  "total": 17,
-  "page": 1,
-  "page_size": 20,
-  "data": [
-    "000e33ab7471186f3b1de9fc08bb9c480f453590",
-    "09ef1db6b67d1cbf7eba6bd9b204611848993df7",
-    "2440346158429ceae65c15121d0c40560820cfc2",
-    "26aa7581263332f47e0ce17cf4b1f34d22c7f4cb",
-    "2a75d9238dbbf14891f7bffbba7ef86ca0e98cc9",
-    "4e3da3856567e4ab21b70c25fb7c19729fceebca",
-    "544fec0d957816c880f1ac4c4ca239feede0ac70",
-    "54937e208cf724f06ca723173c54fc5e8f9ad01a",
-    "55dbb6b98e70f4a9905c880b7c66282b5d5ad000",
-    "629f2d3da692107bfc5db3122c44fcfaa72db8c7",
-    "7efe6655436794be8720d0b0efdffdc2a8bff9e4",
-    "805b1f87212164fd1db64b8ed63a8f2c42aac647",
-    "d518c4f95a3f39ed853a2614566897c4ad5a008f",
-    "e012aa66c83999e3862c8aa534b9ce66fc14a37a",
-    "e8f6748439da597a43ed150f55f6b48e30494bd6",
-    "eac5792572eb726aa0dba9a7afa9757f8063c6c9",
-    "fd8c65634a9d8899fa14200177af19d24f6e1c37"
-  ]
+	"total": 11,
+	"page": 1,
+	"page_size": 5,
+	"data": [{
+			"block_hash": "0xbfb8f84a77c3ee02f7cf40d2dee62ac9c713ba77cb4ce90f87b0716ca09e8dd5",
+			"validator": "0xd518c4f95a3f39ed853a2614566897c4ad5a008f",
+			"delegator": "0x876ffa3e317d609438d87ecb55eabb71217f9206",
+			"amount": "33000000000000000000",
+			"timestamp": 1695724636
+		},
+		{
+			"block_hash": "0x038da9d3b8c6e080f24aef8d61dbd03ddcc6903da3dd8c92f3d655243716503d",
+			"validator": "0x69e2b6c4c1122172e69af48e0aec36b7f7c8005a",
+			"delegator": "0xccb4e8b208a468f6323312a962c07c2f75ef8eb7",
+			"amount": "1862000000000000000000",
+			"timestamp": 1695724474
+		},
+		{
+			"block_hash": "0x16b2eb7fc1972feeb09b551119a4506de50a5f796a81820908184b681f5f2664",
+			"validator": "0xb4989bbb38287c2af6df0155b55e4073da6c4ba8",
+			"delegator": "0x876ffa3e317d609438d87ecb55eabb71217f9206",
+			"amount": "300000000000000000000",
+			"timestamp": 1695724400
+		},
+		{
+			"block_hash": "0x1405a29669ef9530295ada73881c6a41a66806cbba1b086f6d022b1cc42f4cf6",
+			"validator": "0x431500ee574ce0c22bfad987fb4054185d5e8af2",
+			"delegator": "0x6348f62079d48e3b6fd35d98aeb55d3eadfa56a9",
+			"amount": "547624830951000000000000",
+			"timestamp": 1695722301
+		},
+		{
+			"block_hash": "0x1405a29669ef9530295ada73881c6a41a66806cbba1b086f6d022b1cc42f4cf6",
+			"validator": "0x68299681f8cd2a772c2dd3d2d2d9c498d46f82ed",
+			"delegator": "0xc813c256f3f89b190e0ab86a5fe87845f9cba84b",
+			"amount": "0",
+			"timestamp": 1695722301
+		}
+	]
+}
+```
+
+<h3 id="1.4">1.4 获取validator的undelegate记录</h3>
+* `GET /api/records/undelegate`
+* 参数
+
+| 参数        | 类型     | 必传 | 说明                        |
+|-----------|--------|----|---------------------------|
+| validator | string | N  | validator地址，不传则返回所有的解质押记录 |
+| page      | number | N  | 页码，默认1                    |
+| page_size | number | N  | 页大小，默认10                  |
+
+* Request: `http://localhost/api/records/undelegate?validator=0x6e20c920f1bdb817f0e19cd05dae01c6affa5228&page=1&page_size=10`
+* Response:
+  * 按`timestamp`降序排列
+```json
+{
+	"total": 2,
+	"page": 1,
+	"page_size": 10,
+	"data": [{
+			"block_hash": "0x1405a29669ef9530295ada73881c6a41a66806cbba1b086f6d022b1cc42f4cf6",
+			"validator": "0x6e20c920f1bdb817f0e19cd05dae01c6affa5228",
+			"delegator": "0xe9c876ed4622720d994bf141d90b3063bc373af8",
+			"amount": "28184996145912000000000000",
+			"timestamp": 1695722301
+		},
+		{
+			"block_hash": "0x1405a29669ef9530295ada73881c6a41a66806cbba1b086f6d022b1cc42f4cf6",
+			"validator": "0x6e20c920f1bdb817f0e19cd05dae01c6affa5228",
+			"delegator": "0xa78edfdea57fd25c7945eb5badb38c4a163864a0",
+			"amount": "99469830000000000000000",
+			"timestamp": 1695722301
+		}
+	]
 }
 ```
 
 
-### `GET /api/bound`
-* 功能：获取delegator的bound和unboud数量
+
+<h3 id="2.1">2.1 获取bound数量</h3>
+* `GET /api/bound`
 * 参数
 
 | 参数        | 类型     | 必传 | 说明          |
@@ -282,24 +350,26 @@
 | validator | string | Y  | validator地址 |
 | delegator | string | Y  | delegator地址 |
 
-* Request:`http://localhost/api/bound?validator=09ef1db6b67d1cbf7eba6bd9b204611848993df7&delegator=2d15d52cc138ffb322b732239cd3630735abac88`
+* Request: `http://localhost/api/bound?validator=0x09ef1db6b67d1cbf7eba6bd9b204611848993df7&delegator=0x2d15d52cc138ffb322b732239cd3630735abac88`
 * Response:
 ```json
-  {
-    "bound_amount": "110000001800000063120",
-    "unbound_amount": "0"
-  }
+{
+  "bound_amount": "110000001800000063120",
+  "unbound_amount": "0"
+}
 ```
 
-### `GET /api/reward`
-* 功能：获取delegator的奖励数量
+
+
+<h3 id="2.2">2.2 获取reward数量</h3>
+* `GET /api/reward`
 * 参数
 
-| 参数        | 类型     | 必传 | 说明          |
-|-----------|--------|----|-------------|
-| delegator | string | Y  | delegator地址 |
+| 参数      | 类型     | 必传 | 说明          |
+|---------|--------|----|-------------|
+| address | string | Y  | delegator地址 |
 
-* Request:`http://localhost/api/reward?delegator=2d15d52cc138ffb322b732239cd3630735abac88`
+* Request: `http://localhost/api/reward?address=0x2d15d52cc138ffb322b732239cd3630735abac88`
 * Response:
 ```json
 {
@@ -307,8 +377,8 @@
 }
 ```
 
-### `GET /api/debt`
-* 功能：获取validator对delegator的奖励负债
+<h3 id="2.3">2.3 获取debt数量</h3>
+* `GET /api/debt`
 * 参数
 
 | 参数        | 类型     | 必传 | 说明          |
@@ -316,7 +386,7 @@
 | validator | string | Y  | validator地址 |
 | delegator | string | Y  | delegator地址 |
 
-* Request:`http://localhost/api/debt?validator=d518c4f95a3f39ed853a2614566897c4ad5a008f&delegator=2d15d52cc138ffb322b732239cd3630735abac88`
+* Request: `http://localhost/api/debt?validator=0xd518c4f95a3f39ed853a2614566897c4ad5a008f&delegator=0x2d15d52cc138ffb322b732239cd3630735abac88`
 * Response:
 ```json
 {
@@ -324,20 +394,20 @@
 }
 ```
 
-### `GET /api/sum`
-* 功能：获取delegator的delegate, undelegate, claim总量
+<h3 id="3.1">3.1 获取debt数量</h3>
+* `GET /api/sum`
 * 参数
 
-| 参数        | 类型     | 必传 | 说明          |
-|-----------|--------|----|-------------|
-| delegator | string | Y  | delegator地址 |
+| 参数      | 类型     | 必传 | 说明 |
+|---------|--------|----|----|
+| address | string | Y  | 地址 |
 
-* Request: `http://localhost/api/sum?delegator=2d15d52cc138ffb322b732239cd3630735abac88`
+* Request: `http://localhost/api/sum?address=0xeb2b96369e83e1466bb56f2bf9d97cbda130e741`
 * Response:
 ```json
 {
-  "sum_delegate": "86000000000000000000",
-  "sum_undelegate": "467980000000000000000",
-  "sum_claim": "1818488527919773610"
+  "delegate": "32254951206000000000000",
+  "undelegate": "0",
+  "claim": "0"
 }
 ```

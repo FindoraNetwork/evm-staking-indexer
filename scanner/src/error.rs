@@ -1,3 +1,4 @@
+use ethers::providers::ProviderError;
 use std::num::ParseIntError;
 
 #[derive(Debug)]
@@ -12,9 +13,14 @@ pub enum ScannerError {
     SerdeJsonError(serde_json::Error),
     EthAbiError(ethabi::Error),
     BlockNotFound(u64),
-    DeserializeTxError(String),
-    TxNotFound(String),
     HexError(rustc_hex::FromHexError),
+    EtherProviderError(ethers::providers::ProviderError),
+}
+
+impl From<ProviderError> for ScannerError {
+    fn from(e: ProviderError) -> Self {
+        ScannerError::EtherProviderError(e)
+    }
 }
 
 impl From<String> for ScannerError {
