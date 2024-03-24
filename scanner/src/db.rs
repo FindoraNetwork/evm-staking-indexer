@@ -1,6 +1,7 @@
 use crate::error;
 use error::Result;
 use serde_json::Value;
+use sqlx::types::chrono::NaiveDateTime;
 use sqlx::types::BigDecimal;
 use sqlx::{PgPool, Row};
 
@@ -34,62 +35,74 @@ impl Storage {
 
         Ok(())
     }
+
     pub async fn upsert_stake(
         &self,
-        tx: &str,
+        tx_id: &str,
+        block_id: &str,
         block_num: i64,
+        tm: NaiveDateTime,
         validator: &str,
-        public_key: &str,
+        pubkey: &str,
         ty: i32,
         staker: &str,
         amount: BigDecimal,
-        memo: &str,
+        memo: Value,
         rate: BigDecimal,
     ) -> Result<()> {
-        sqlx::query("insert into evm_e_stake values($1,$2,$3,$4,$5,$6,$7,$8,$9) on \
-            conflict(tx,validator,staker) do update set block_num=$2,public_key=$4,ty=$5,amount=$7,memo=$8,rate=$9")
-        .bind(tx)
-        .bind(block_num)
-        .bind(validator)
-        .bind(public_key)
-        .bind(ty)
-        .bind(staker)
-        .bind(amount)
-        .bind(memo)
-        .bind(rate)
-        .execute(&self.pool)
-        .await?;
+        sqlx::query("INSERT INTO evm_stakes VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) ON \
+            CONFLICT(tx_id,validator,staker) DO UPDATE SET block_id=$2,block_num=$3,tm=$4,pubkey=$6,ty=$7,amount=$9,memo=$10,rate=$11"
+        )
+            .bind(tx_id)
+            .bind(block_id)
+            .bind(block_num)
+            .bind(tm)
+            .bind(validator)
+            .bind(pubkey)
+            .bind(ty)
+            .bind(staker)
+            .bind(amount)
+            .bind(memo)
+            .bind(rate)
+            .execute(&self.pool)
+            .await?;
 
         Ok(())
     }
 
     pub async fn upsert_delegation(
         &self,
-        tx: &str,
+        tx_id: &str,
+        block_id: &str,
         block_num: i64,
+        tm: NaiveDateTime,
         validator: &str,
         delegator: &str,
         amount: BigDecimal,
     ) -> Result<()> {
         sqlx::query(
-            "insert into evm_e_delegation values($1,$2,$3,$4,$5) on \
-                conflict(tx,validator,delegator) do update set block_num=$2,amount=$5",
+            "INSERT INTO evm_delegations VALUES($1,$2,$3,$4,$5,$6,$7) ON \
+                CONFLICT(tx_id,validator,delegator) DO UPDATE SET block_id=$2,block_num=$3,tm=$4,amount=$7",
         )
-        .bind(tx)
-        .bind(block_num)
-        .bind(validator)
-        .bind(delegator)
-        .bind(amount)
-        .execute(&self.pool)
-        .await?;
+            .bind(tx_id)
+            .bind(block_id)
+            .bind(block_num)
+            .bind(tm)
+            .bind(validator)
+            .bind(delegator)
+            .bind(amount)
+            .execute(&self.pool)
+            .await?;
 
         Ok(())
     }
 
     pub async fn upsert_undelegation(
         &self,
-        tx: &str,
+        tx_id: &str,
+        block_id: &str,
         block_num: i64,
+        tm: NaiveDateTime,
         idx: i32,
         validator: &str,
         delegator: &str,
@@ -97,61 +110,42 @@ impl Storage {
         amount: BigDecimal,
         op_type: i32,
     ) -> Result<()> {
-        sqlx::query("insert into evm_e_undelegation values($1,$2,$3,$4,$5,$6,$7,$8) on \
-            conflict(tx,validator,delegator) do update set block_num=$2,idx=$3,unlock_time=$6,amount=$7,op_type=$8")
-        .bind(tx)
-        .bind(block_num)
-        .bind(idx)
-        .bind(validator)
-        .bind(delegator)
-        .bind(unlock_time)
-        .bind(amount)
-        .bind(op_type)
-        .execute(&self.pool)
-        .await?;
-
-        Ok(())
-    }
-
-    pub async fn upsert_proposer(&self, tx: &str, block_num: i64, proposer: &str) -> Result<()> {
-        sqlx::query(
-            "insert into evm_e_proposer values($1,$2,$3) on conflict(tx,proposer) do update set block_num=$2",
+        sqlx::query("INSERT INTO evm_undelegations VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON \
+            CONFLICT(tx_id,validator,delegator) DO UPDATE SET block_id=$2,block_num=$3,tm=$4,idx=$5,unlock_time=$8,amount=$9,op_type=$10"
         )
-        .bind(tx)
-        .bind(block_num)
-        .bind(proposer)
-        .execute(&self.pool)
-        .await?;
-
-        Ok(())
-    }
-
-    pub async fn upsert_epoch(&self, tx: &str, block_num: i64, epoch: i64) -> Result<()> {
-        sqlx::query(
-            "insert into evm_e_epoch values($1,$2,$3) on conflict(tx,epoch) do update set block_num=$2",
-        )
-        .bind(tx)
-        .bind(block_num)
-        .bind(epoch)
-        .execute(&self.pool)
-        .await?;
+            .bind(tx_id)
+            .bind(block_id)
+            .bind(block_num)
+            .bind(tm)
+            .bind(idx)
+            .bind(validator)
+            .bind(delegator)
+            .bind(unlock_time)
+            .bind(amount)
+            .bind(op_type)
+            .execute(&self.pool)
+            .await?;
 
         Ok(())
     }
 
     pub async fn upsert_jailed(
         &self,
-        tx: &str,
+        tx_id: &str,
+        block_id: &str,
         block_num: i64,
+        tm: NaiveDateTime,
         validator: &str,
         jailed: bool,
     ) -> Result<()> {
         sqlx::query(
-            "insert into evm_e_jailed values($1,$2,$3,$4) on conflict(tx,validator) \
-                do update set block_num=$2,jailed=$4",
+            "INSERT INTO evm_jailed VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(tx_id,validator) \
+                DO UPDATE SET block_id=$2,block_num=$3,tm=$4,jailed=$6",
         )
-        .bind(tx)
+        .bind(tx_id)
+        .bind(block_id)
         .bind(block_num)
+        .bind(tm)
         .bind(validator)
         .bind(jailed)
         .execute(&self.pool)
@@ -159,20 +153,25 @@ impl Storage {
 
         Ok(())
     }
+
     pub async fn upsert_punish(
         &self,
-        tx: &str,
+        tx_id: &str,
+        block_id: &str,
         block_num: i64,
+        tm: NaiveDateTime,
         voted: Value,
         unvoted: Value,
         byztine: Value,
     ) -> Result<()> {
         sqlx::query(
-            "insert into evm_e_punish values($1,$2,$3,$4,$5) on conflict(tx) do update \
-                set block_num=$2,voted=$3,unvoted=$4,byztine=$5",
+            "INSERT INTO evm_punish VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(tx_id) DO UPDATE \
+                SET block_id=$2,block_num=$3,tm=$4,voted=$5,unvoted=$6,byztine=$7",
         )
-        .bind(tx)
+        .bind(tx_id)
+        .bind(block_id)
         .bind(block_num)
+        .bind(tm)
         .bind(voted)
         .bind(unvoted)
         .bind(byztine)
@@ -183,48 +182,83 @@ impl Storage {
 
     pub async fn upsert_update_validator(
         &self,
-        tx: &str,
+        tx_id: &str,
+        block_id: &str,
         block_num: i64,
+        tm: NaiveDateTime,
         validator: &str,
-        memo: &str,
+        memo: Value,
         rate: BigDecimal,
     ) -> Result<()> {
         sqlx::query(
-            "insert into evm_e_update_validator values($1,$2,$3,$4,$5) on conflict(tx,validator) \
-                do update set block_num=$2,memo=$4,rate=$5",
+            "INSERT INTO evm_update_validator values($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(tx_id,validator) \
+                DO UPDATE SET block_id=$2,block_num=$3,tm=$4,memo=$6,rate=$7",
         )
-        .bind(tx)
-        .bind(block_num)
-        .bind(validator)
-        .bind(memo)
-        .bind(rate)
-        .execute(&self.pool)
-        .await?;
+            .bind(tx_id)
+            .bind(block_id)
+            .bind(block_num)
+            .bind(tm)
+            .bind(validator)
+            .bind(memo)
+            .bind(rate)
+            .execute(&self.pool)
+            .await?;
+
         Ok(())
     }
 
     pub async fn upsert_coinbase_mint(
         &self,
-        tx: &str,
+        tx_id: &str,
+        block_id: &str,
         block_num: i64,
+        tm: NaiveDateTime,
         validator: &str,
         delegator: &str,
         pubkey: &str,
         amount: BigDecimal,
     ) -> Result<()> {
         sqlx::query(
-            "insert into evm_e_coinbase_mint values($1,$2,$3,$4,$5,$6) on \
-                conflict(tx,validator,delegator) do update set block_num=$2,pubkey=$5,amount=$6",
+            "INSERT INTO evm_coinbase_mint VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON \
+                CONFLICT(tx_id,validator,delegator) DO UPDATE SET block_id=$2,block_num=$3,tm=$4,pubkey=$7,amount=$8",
         )
-        .bind(tx)
+            .bind(tx_id)
+            .bind(block_id)
+            .bind(block_num)
+            .bind(tm)
+            .bind(validator)
+            .bind(delegator)
+            .bind(pubkey)
+            .bind(amount)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(())
+    }
+
+    pub async fn upsert_evm_receipt(
+        &self,
+        tx_id: &str,
+        block_id: &str,
+        block_num: i64,
+        from: &str,
+        to: &str,
+        tm: NaiveDateTime,
+        value: Value,
+    ) -> Result<()> {
+        sqlx::query(
+            "INSERT INTO evm_receipts VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(tx_id) \
+            DO UPDATE SET block_id=$2,block_num=$3,from_addr=$4,to_addr=$5,tm=$6,value=$7",
+        )
+        .bind(tx_id)
+        .bind(block_id)
         .bind(block_num)
-        .bind(validator)
-        .bind(delegator)
-        .bind(pubkey)
-        .bind(amount)
+        .bind(from)
+        .bind(to)
+        .bind(tm)
+        .bind(value)
         .execute(&self.pool)
         .await?;
-
         Ok(())
     }
 }

@@ -1,16 +1,18 @@
 mod db;
 mod error;
 mod scanner;
-mod tdrpc;
 mod types;
 
+extern crate core;
 extern crate num_cpus;
+
 use crate::db::Storage;
 use crate::scanner::Scanner;
 use clap::Parser;
 use error::Result;
+use ethers::providers::Provider;
 use log::{error, info};
-use reqwest::Url;
+
 use sqlx::pool::PoolOptions;
 use sqlx::{Pool, Postgres};
 use std::env;
@@ -41,12 +43,11 @@ async fn main() -> Result<()> {
 
     let db_url = env::var("DATABASE_URL").expect("Not find `DATABASE_URL`");
     let pool: Pool<Postgres> = PoolOptions::new()
-        .max_connections(10)
         .connect(db_url.as_str())
         .await
         .expect("connect db failed");
 
-    info!("connecting db...ok");
+    info!("Connecting db...ok");
     let storage = Storage::new(pool);
     let args = Args::parse();
     let start = if let Some(start) = args.start {
@@ -63,10 +64,10 @@ async fn main() -> Result<()> {
     info!("Scanning interval: {}s", interval.as_secs());
     info!("Starting from block: {}", start);
 
-    let rpc_url: Url = args.node.parse().expect("parse node url");
+    let provider = Provider::try_from(args.node)?;
 
     info!("Starting syncing...");
-    let scanner = Scanner::new(DEFAULT_RPC_RETRIES, num_cpus::get(), rpc_url, storage)
+    let scanner = Scanner::new(DEFAULT_RPC_RETRIES, num_cpus::get(), provider, storage)
         .expect("failed to new scanner");
     let _ = scanner.run(start, interval, args.single).await;
 

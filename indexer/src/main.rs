@@ -1,13 +1,21 @@
-mod api;
+mod delegate;
 mod error;
-mod types;
+mod receipt;
+mod stake;
 
-use crate::api::{
-    get_claim_records, get_delegation_records, get_delegator_bound, get_delegator_debt,
-    get_delegator_reward, get_delegators_of_validator, get_stake_records, get_sum,
-    get_undelegation_records, get_validator_detail, get_validator_status, get_validators,
-    get_validators_of_delegator,
+mod contract;
+mod types;
+mod undelegate;
+mod validators;
+
+use crate::contract::{
+    get_delegator_bound, get_delegator_debt, get_delegator_reward, get_delegator_sum,
 };
+use crate::delegate::get_delegate_records;
+use crate::receipt::get_receipts;
+use crate::stake::get_stake_records;
+use crate::undelegate::get_undelegate_records;
+use crate::validators::{get_latest20, get_validators};
 use axum::http::Method;
 use axum::routing::get;
 use axum::Router;
@@ -28,25 +36,24 @@ abigen!(RewardContract, "../abi/Reward.json");
 abigen!(StakingContract, "../abi/Staking.json");
 
 #[derive(Serialize, Deserialize)]
-struct Config {
+struct IndexerConfig {
     pub evm_rpc: String,
     pub staking: String,
     pub reward: String,
     pub listen: String,
     pub db_url: String,
 }
-impl Config {
+impl IndexerConfig {
     pub fn new(file_path: &str) -> Result<Self> {
         let mut f = File::open(file_path)?;
         let mut s = String::new();
         f.read_to_string(&mut s)?;
-        let c: Config = toml::from_str(&s)?;
+        let c: IndexerConfig = toml::from_str(&s)?;
         Ok(c)
     }
 }
 
 struct AppState {
-    //rds_conn: redis::Connection,
     pub pool: PgPool,
     pub staking: StakingContract<Provider<Http>>,
     pub reward: RewardContract<Provider<Http>>,
@@ -56,11 +63,11 @@ struct AppState {
 async fn main() -> Result<()> {
     tracing_subscriber::fmt::init();
 
-    let config = Config::new("./config.toml")?;
-    info!("listening at: {}", config.listen);
+    let config = IndexerConfig::new("./config.toml")?;
+    info!("Listening at: {}", config.listen);
     info!("EVM RPC: {}", config.evm_rpc);
-    info!("staking contract: {}", config.staking);
-    info!("reward contract: {}", config.reward);
+    info!("Staking contract: {}", config.staking);
+    info!("Reward contract: {}", config.reward);
 
     let provider = Provider::<Http>::try_from(config.evm_rpc)?;
     let staking_addr: Address = config.staking.parse()?;
@@ -69,7 +76,6 @@ async fn main() -> Result<()> {
     let reward = RewardContract::new(reward_addr, Arc::new(provider));
 
     let pool: Pool<Postgres> = PoolOptions::new()
-        .max_connections(10)
         .connect(&config.db_url)
         .await
         .expect("can't connect to database");
@@ -86,19 +92,16 @@ async fn main() -> Result<()> {
         .allow_headers(Any);
 
     let app = Router::new()
-        .route("/api/validator/list", get(get_validators))
-        .route("/api/validator/detail", get(get_validator_detail))
-        .route("/api/validator/status", get(get_validator_status))
-        .route("/api/stakes", get(get_stake_records))
-        .route("/api/claims", get(get_claim_records))
-        .route("/api/delegations", get(get_delegation_records))
-        .route("/api/undelegations", get(get_undelegation_records))
-        .route("/api/delegators", get(get_delegators_of_validator))
-        .route("/api/validators", get(get_validators_of_delegator))
+        .route("/api/validators", get(get_validators))
+        .route("/api/diff/latest", get(get_latest20))
+        .route("/api/records/delegate", get(get_delegate_records))
+        .route("/api/records/undelegate", get(get_undelegate_records))
+        .route("/api/records/stake", get(get_stake_records))
+        .route("/api/receipts", get(get_receipts))
         .route("/api/bound", get(get_delegator_bound))
         .route("/api/reward", get(get_delegator_reward))
         .route("/api/debt", get(get_delegator_debt))
-        .route("/api/sum", get(get_sum))
+        .route("/api/sum", get(get_delegator_sum))
         .layer(cors)
         .with_state(app_state);
 

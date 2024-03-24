@@ -1,33 +1,5 @@
 use serde::{Deserialize, Serialize};
-#[derive(Serialize, Deserialize)]
-pub struct ValidatorResponse {
-    pub address: String,
-    pub power: String,
-    pub public_key: String,
-    pub public_key_type: i32,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct ValidatorStatusResponse {
-    pub heap_index_off1: String,
-    pub is_active: bool,
-    pub jailed: bool,
-    pub unjail_datetime: u64,
-    pub should_vote: i32,
-    pub voted: i32,
-}
-#[derive(Serialize, Deserialize)]
-pub struct ValidatorDataResponse {
-    pub public_key: String,
-    pub public_key_type: i32,
-    pub rate: String,
-    pub staker: String,
-    pub power: String,
-    pub total_unbound_amount: String,
-    pub punish_rate: String,
-    pub begin_block: String,
-}
-
+use serde_json::Value;
 #[derive(Serialize, Deserialize)]
 pub struct QueryResult<T> {
     pub total: i64,
@@ -37,79 +9,96 @@ pub struct QueryResult<T> {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct DelegationRecord {
-    pub tx: String,
-    pub block_num: i64,
-    pub validator: String,
-    pub delegator: String,
-    pub amount: String,
+pub struct DelegatorSumResponse {
+    pub delegate: String,
+    pub undelegate: String,
+    pub claim: String,
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct UndelegationRecord {
-    pub tx: String,
-    pub block_num: i64,
-    pub index: i64,
-    pub validator: String,
-    pub delegator: String,
-    pub unlock_time: i64,
-    pub amount: String,
-    pub op_type: i32,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct DelegatorInfo {
+pub struct BoundResponse {
     pub bound_amount: String,
     pub unbound_amount: String,
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct DelegatorReward {
+pub struct RewardResponse {
     pub reward: String,
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct DelegatorDebt {
+pub struct DebtResponse {
     pub debt: String,
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct ValidatorAmount {
-    pub address: String,
-    pub amount: String,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct ValidatorSum {
-    pub sum: String,
-    pub validators: Vec<ValidatorAmount>,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct DelegatorSum {
-    pub sum_delegate: String,
-    pub sum_undelegate: String,
-    pub sum_claim: String,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct ClaimRecord {
-    pub tx: String,
+pub struct ValidatorLatest20Response {
     pub block_num: i64,
-    pub validator: String,
+    pub total: String,
     pub delegator: String,
     pub amount: String,
+    pub op: i32,
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct StakeRecord {
-    pub tx: String,
+pub struct ValidatorResponse {
+    pub validator: String,
+    pub staker: String,
+    pub active: bool,
+    pub jailed: bool,
+    pub should_vote: i32,
+    pub voted: i32,
+    pub pubkey: String,
+    pub pubkey_type: i32,
+    pub rate: String,
+    pub power: String,
+    pub unbound_amount: String,
+    pub punish_rate: String,
+    pub begin_block: i64,
+    pub unjail_time: i64,
+    pub memo: Value,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct ReceiptResponse {
+    pub tx_id: String,
+    pub block_id: String,
     pub block_num: i64,
+    pub from: String,
+    pub to: String,
+    pub datetime: String,
+    pub timestamp: i64,
+    pub value: Value,
+}
+#[derive(Serialize, Deserialize)]
+pub struct StakeResponse {
+    pub tx_id: String,
+    pub block_id: String,
+    pub block_num: i64,
+    pub datetime: String,
+    pub timestamp: i64,
     pub validator: String,
     pub public_key: String,
     pub ty: i32,
     pub staker: String,
     pub amount: String,
-    pub memo: String,
     pub rate: String,
+    pub memo: Value,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct DelegateResponse {
+    pub block_hash: String,
+    pub validator: String,
+    pub delegator: String,
+    pub amount: String,
+    pub timestamp: i64,
+}
+#[derive(Serialize, Deserialize)]
+pub struct UndelegateResponse {
+    pub block_hash: String,
+    pub validator: String,
+    pub delegator: String,
+    pub amount: String,
+    pub timestamp: i64,
 }
