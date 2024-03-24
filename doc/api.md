@@ -14,8 +14,8 @@
 * [3.1 统计delegate,undelegate,claim总量](#3.1)
 
 <h3 id="1.1">1.1 获取Validator集合</h3>
-* `GET /api/valiators`
-* 参数
+* `GET /api/valiators` 
+* 参数 
 
 | 参数        | 类型     | 必传 | 说明       |
 |-----------|--------|----|----------|
@@ -24,8 +24,8 @@
 | page      | number | N  | 页码，默认1   |
 | page_size | number | N  | 页大小，默认10 |
 
-* Request: `http://localhost/api/validators?online=true&page=1&page_size=5`
-* Response: 返回结果按power（质押总量）降序排列
+* Request: `http://localhost/api/validators?online=true&page=1&page_size=5` 
+* Response: 返回结果按power（质押总量）降序排列 
 ```json
 {
   "total": 31,
@@ -146,15 +146,15 @@
 ```
 
 <h3 id="1.2">1.2 获取validator最近20笔质押变化</h3>
-* `GET /api/diff/latest`
-* 参数
+* `GET /api/diff/latest` 
+* 参数 
 
 | 参数        | 类型     | 必传 | 说明          |
 |-----------|--------|----|-------------|
 | validator | string | Y  | validator地址 |
 
-* Request: `http://localhost/api/diff/latest?validator=0xc8d2d4ff0b882243f82c1fb20574c81e4c866e72`
-* Response: 
+* Request: `http://localhost/api/diff/latest?validator=0xc8d2d4ff0b882243f82c1fb20574c81e4c866e72` 
+* Response:  
   * 按高度降序排列
   * 返回值中`amount`，非零正数表示delegate的数量，非零负数表示undelegate的数量
   * 如果`amount`是0，则用`op`区分，`op`为零表示delegate，非零表示undelegate
@@ -247,8 +247,8 @@
 ]
 ```
 <h3 id="1.3">1.3 获取validator的delegate记录</h3>
-* `GET /api/records/delegate`
-* 参数
+* `GET /api/records/delegate`  
+* 参数 
 
 | 参数        | 类型     | 必传 | 说明                       |
 |-----------|--------|----|--------------------------|
@@ -256,8 +256,8 @@
 | page      | number | N  | 页码，默认1                   |
 | page_size | number | N  | 页大小，默认10                 |
 
-* Request: `http://localhost/api/records/delegate?validator=0xc8d2d4ff0b882243f82c1fb20574c81e4c866e72&page=1&page_size=5`
-* Response:
+* Request: `http://localhost/api/records/delegate?validator=0xc8d2d4ff0b882243f82c1fb20574c81e4c866e72&page=1&page_size=5` 
+* Response: 
   * 按`timestamp`降序排列
 ```json
 {
@@ -304,8 +304,8 @@
 ```
 
 <h3 id="1.4">1.4 获取validator的undelegate记录</h3>
-* `GET /api/records/undelegate`
-* 参数
+* `GET /api/records/undelegate`  
+* 参数  
 
 | 参数        | 类型     | 必传 | 说明                        |
 |-----------|--------|----|---------------------------|
@@ -313,8 +313,8 @@
 | page      | number | N  | 页码，默认1                    |
 | page_size | number | N  | 页大小，默认10                  |
 
-* Request: `http://localhost/api/records/undelegate?validator=0x6e20c920f1bdb817f0e19cd05dae01c6affa5228&page=1&page_size=10`
-* Response:
+* Request: `http://localhost/api/records/undelegate?validator=0x6e20c920f1bdb817f0e19cd05dae01c6affa5228&page=1&page_size=10` 
+* Response: 
   * 按`timestamp`降序排列
 ```json
 {
@@ -342,16 +342,16 @@
 
 
 <h3 id="2.1">2.1 获取bound数量</h3>
-* `GET /api/bound`
-* 参数
+* `GET /api/bound` 
+* 参数 
 
 | 参数        | 类型     | 必传 | 说明          |
 |-----------|--------|----|-------------|
 | validator | string | Y  | validator地址 |
 | delegator | string | Y  | delegator地址 |
 
-* Request: `http://localhost/api/bound?validator=0x09ef1db6b67d1cbf7eba6bd9b204611848993df7&delegator=0x2d15d52cc138ffb322b732239cd3630735abac88`
-* Response:
+* Request: `http://localhost/api/bound?validator=0x09ef1db6b67d1cbf7eba6bd9b204611848993df7&delegator=0x2d15d52cc138ffb322b732239cd3630735abac88` 
+* Response: 
 ```json
 {
   "bound_amount": "110000001800000063120",
@@ -360,17 +360,16 @@
 ```
 
 
-
 <h3 id="2.2">2.2 获取reward数量</h3>
-* `GET /api/reward`
-* 参数
+* `GET /api/reward` 
+* 参数 
 
 | 参数      | 类型     | 必传 | 说明          |
 |---------|--------|----|-------------|
 | address | string | Y  | delegator地址 |
 
-* Request: `http://localhost/api/reward?address=0x2d15d52cc138ffb322b732239cd3630735abac88`
-* Response:
+* Request: `http://localhost/api/reward?address=0x2d15d52cc138ffb322b732239cd3630735abac88` 
+* Response: 
 ```json
 {
   "reward": "16742332457649244907"
@@ -378,16 +377,16 @@
 ```
 
 <h3 id="2.3">2.3 获取debt数量</h3>
-* `GET /api/debt`
-* 参数
+* `GET /api/debt` 
+* 参数 
 
 | 参数        | 类型     | 必传 | 说明          |
 |-----------|--------|----|-------------|
 | validator | string | Y  | validator地址 |
 | delegator | string | Y  | delegator地址 |
 
-* Request: `http://localhost/api/debt?validator=0xd518c4f95a3f39ed853a2614566897c4ad5a008f&delegator=0x2d15d52cc138ffb322b732239cd3630735abac88`
-* Response:
+* Request: `http://localhost/api/debt?validator=0xd518c4f95a3f39ed853a2614566897c4ad5a008f&delegator=0x2d15d52cc138ffb322b732239cd3630735abac88` 
+* Response: 
 ```json
 {
   "debt": "96558069283467635"
@@ -395,15 +394,15 @@
 ```
 
 <h3 id="3.1">3.1 获取debt数量</h3>
-* `GET /api/sum`
-* 参数
+* `GET /api/sum` 
+* 参数 
 
 | 参数      | 类型     | 必传 | 说明 |
 |---------|--------|----|----|
 | address | string | Y  | 地址 |
 
-* Request: `http://localhost/api/sum?address=0xeb2b96369e83e1466bb56f2bf9d97cbda130e741`
-* Response:
+* Request: `http://localhost/api/sum?address=0xeb2b96369e83e1466bb56f2bf9d97cbda130e741` 
+* Response: 
 ```json
 {
   "delegate": "32254951206000000000000",
