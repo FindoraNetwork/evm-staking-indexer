@@ -46,7 +46,7 @@ impl UpdaterConfig {
 struct Args {
     /// Node RPC
     #[arg(long)]
-    pub node: String,
+    pub node: Option<String>,
     /// Block height to start scanning
     #[arg(long)]
     pub start: Option<u64>,

@@ -1,15 +1,3 @@
-drop table if exists evm_last_height;
-drop table if exists evm_stakes;
-drop table if exists evm_delegations;
-drop table if exists evm_undelegations;
-drop table if exists evm_jailed;
-drop table if exists evm_punish;
-drop table if exists evm_update_validator;
-drop table if exists evm_coinbase_mint;
-drop table if exists evm_receipts;
-drop table if exists evm_audit;
-drop table if exists evm_validators;
-
 create table if not exists evm_last_height(
     tip varchar(3) not null,
     height bigint not null,
@@ -124,6 +112,8 @@ create table if not exists evm_audit(
     amount numeric(48) not null,
     op integer not null
 );
+create index idxvld on evm_audit(validator);
+create index idxdlg on evm_audit(delegator);
 
 create table if not exists evm_validators(
     block_num bigint not null,

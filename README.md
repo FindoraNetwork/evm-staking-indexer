@@ -20,3 +20,10 @@ Use `scanner/schema.sql` to create tables in DB.
 * `node` is required.
 * `start` is not required, starting from `4636000` by default.
 * `interval` is not required, default value is `12` in seconds.
+## Updater
+### Config
+Modify the config file in `updater/config.toml`
+### Run
+```
+./updater
+```
