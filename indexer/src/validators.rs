@@ -71,6 +71,7 @@ pub async fn get_validator_votes(
 
 #[derive(Serialize, Deserialize)]
 pub struct GetValidatorsParams {
+    pub validator: Option<String>,
     pub online: Option<bool>,
     pub offline: Option<bool>,
     pub page: Option<i32>,
@@ -100,11 +101,14 @@ pub async fn get_validators(
         WHERE ev.block_num=(SELECT max(block_num) FROM evm_validators) ".to_string();
 
     let mut query_params: Vec<String> = vec![];
+    if let Some(validator) = params.0.validator {
+        query_params.push(format!("ev.validator='{}' ", validator));
+    }
     if let Some(online) = params.0.online {
-        query_params.push(format!("active={} ", online))
+        query_params.push(format!("ev.active={} ", online))
     }
     if let Some(offline) = params.0.offline {
-        query_params.push(format!("jailed={} ", offline))
+        query_params.push(format!("ev.jailed={} ", offline))
     }
     if !query_params.is_empty() {
         sql_total = sql_total

@@ -19,14 +19,17 @@
 * `GET /api/valiators`
 * 参数 
 
-| 参数        | 类型     | 必传 | 说明       |
-|-----------|--------|----|----------|
-| online    | bool   | N  | 过滤active |
-| offline   | bool   | N  | 过滤jailed |
-| page      | number | N  | 页码，默认1   |
-| page_size | number | N  | 页大小，默认10 |
+| 参数        | 类型     | 必传 | 说明          |
+|-----------|--------|----|-------------|
+| validator | string | N  | validator地址 |
+| online    | bool   | N  | 过滤active    |
+| offline   | bool   | N  | 过滤jailed    |
+| page      | number | N  | 页码，默认1      |
+| page_size | number | N  | 页大小，默认10    |
 
-* Request: `http://localhost/api/validators?online=true&page=1&page_size=5` 
+* Request: 
+  * 查询active为true的validator: `http://localhost/api/validators?online=true&page=1&page_size=5`
+  * 查询单个Validator: `http://localhost/api/validators?validator=0xd518c4f95a3f39ed853a2614566897c4ad5a008f`
 * Response: 返回结果按power（质押总量）降序排列 
 ```json
 {
