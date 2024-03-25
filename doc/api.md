@@ -4,6 +4,7 @@
 * [1.2 获取validator最近20笔质押变化](#1.2)
 * [1.3 获取validator的delegate记录](#1.3)
 * [1.4 获取validator的undelegate记录](#1.4)
+* [1.5 获取validator最近10日vote变化](#1.5)
 
 ## [Contract](#2)
 * [2.1 获取bound数量](#2.1)
@@ -343,7 +344,54 @@
 }
 ```
 
+<h3 id="1.5">1.5 获取validator最近10日vote变化</h3>
 
+
+* `GET /api/diff/vote`
+* 参数
+
+| 参数        | 类型     | 必传 | 说明          |
+|-----------|--------|----|-------------|
+| validator | string | N  | validator地址 |
+| page      | number | N  | 页码，默认1      |
+| page_size | number | N  | 页大小，默认10    |
+
+* Request: `http://localhost/api/diff/vote?validator=0x000e33ab7471186f3b1de9fc08bb9c480f453590&page=1&page_size=5`
+* Response:
+```json
+{
+  "total": 65,
+  "page": 1,
+  "page_size": 5,
+  "data": [
+    {
+      "block_num": 5475318,
+      "should_vote": 1135,
+      "voted": 1135
+    },
+    {
+      "block_num": 5475317,
+      "should_vote": 1134,
+      "voted": 1134
+    },
+    {
+      "block_num": 5475316,
+      "should_vote": 1134,
+      "voted": 1134
+    },
+    {
+      "block_num": 5475314,
+      "should_vote": 1131,
+      "voted": 1131
+    },
+    {
+      "block_num": 5475313,
+      "should_vote": 1130,
+      "voted": 1130
+    }
+  ]
+}
+```
 
 <h3 id="2.1">2.1 获取bound数量</h3>
 

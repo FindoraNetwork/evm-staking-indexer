@@ -15,7 +15,7 @@ use crate::delegate::get_delegate_records;
 use crate::receipt::get_receipts;
 use crate::stake::get_stake_records;
 use crate::undelegate::get_undelegate_records;
-use crate::validators::{get_latest20, get_validators};
+use crate::validators::{get_latest20, get_validator_votes, get_validators};
 use axum::http::Method;
 use axum::routing::get;
 use axum::Router;
@@ -96,6 +96,7 @@ async fn main() -> Result<()> {
         .route("/api/diff/latest", get(get_latest20))
         .route("/api/records/delegate", get(get_delegate_records))
         .route("/api/records/undelegate", get(get_undelegate_records))
+        .route("/api/diff/vote", get(get_validator_votes))
         .route("/api/records/stake", get(get_stake_records))
         .route("/api/receipts", get(get_receipts))
         .route("/api/bound", get(get_delegator_bound))
