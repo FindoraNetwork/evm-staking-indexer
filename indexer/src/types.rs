@@ -1,11 +1,19 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+
 #[derive(Serialize, Deserialize)]
 pub struct QueryResult<T> {
     pub total: i64,
     pub page: i32,
     pub page_size: i32,
     pub data: T,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct ValidatorVoteResponse {
+    pub block_num: i64,
+    pub should_vote: i32,
+    pub voted: i32,
 }
 
 #[derive(Serialize, Deserialize)]

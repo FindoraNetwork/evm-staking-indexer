@@ -1,5 +1,7 @@
 use crate::error::Result;
-use crate::types::{QueryResult, ValidatorLatest20Response, ValidatorResponse};
+use crate::types::{
+    QueryResult, ValidatorLatest20Response, ValidatorResponse, ValidatorVoteResponse,
+};
 use crate::AppState;
 use axum::extract::{Query, State};
 use axum::Json;
@@ -10,6 +12,62 @@ use sqlx::types::BigDecimal;
 use sqlx::Row;
 use std::ops::{Add, Sub};
 use std::sync::Arc;
+
+#[derive(Serialize, Deserialize)]
+pub struct GetVoteParams {
+    pub validator: String,
+    pub page: Option<i32>,
+    pub page_size: Option<i32>,
+}
+
+const BLOCKS_PER_DAY: i64 = 24 * 60 * 60 / 15; // 5760
+
+pub async fn get_validator_votes(
+    State(state): State<Arc<AppState>>,
+    params: Query<GetVoteParams>,
+) -> Result<Json<QueryResult<Vec<ValidatorVoteResponse>>>> {
+    let mut pool = state.pool.acquire().await?;
+    let page = params.page.unwrap_or(1);
+    let page_size = params.page_size.unwrap_or(10);
+
+    let sql_total = r#"SELECT count(*) FROM evm_validators WHERE validator = $1
+        AND block_num >= (SELECT max(block_num) FROM evm_validators) - $2"#;
+    let row = sqlx::query(sql_total)
+        .bind(&params.0.validator)
+        .bind(BLOCKS_PER_DAY)
+        .fetch_one(&mut *pool)
+        .await?;
+    let total: i64 = row.try_get("count")?;
+
+    let sql_query = r#"SELECT block_num,should_vote,voted FROM evm_validators WHERE
+        validator = $1 AND block_num >= (SELECT max(block_num) FROM evm_validators) - $2
+        ORDER BY block_num DESC LIMIT $3 OFFSET $4"#;
+    let rows = sqlx::query(sql_query)
+        .bind(&params.0.validator)
+        .bind(BLOCKS_PER_DAY)
+        .bind(page_size)
+        .bind((page - 1) * page_size)
+        .fetch_all(&mut *pool)
+        .await?;
+    let mut votes: Vec<ValidatorVoteResponse> = vec![];
+    for r in rows {
+        let block_num: i64 = r.try_get("block_num")?;
+        let should_vote: i32 = r.try_get("should_vote")?;
+        let voted: i32 = r.try_get("voted")?;
+        votes.push(ValidatorVoteResponse {
+            block_num,
+            should_vote,
+            voted,
+        })
+    }
+
+    Ok(Json(QueryResult {
+        total,
+        page,
+        page_size,
+        data: votes,
+    }))
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct GetValidatorsParams {
