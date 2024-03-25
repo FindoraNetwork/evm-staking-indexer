@@ -352,7 +352,7 @@
 
 | 参数        | 类型     | 必传 | 说明          |
 |-----------|--------|----|-------------|
-| validator | string | N  | validator地址 |
+| validator | string | Y  | validator地址 |
 | page      | number | N  | 页码，默认1      |
 | page_size | number | N  | 页大小，默认10    |
 
