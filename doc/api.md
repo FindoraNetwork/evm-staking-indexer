@@ -400,7 +400,7 @@
 }
 ```
 
-<h3 id="3.1">3.1 获取debt数量</h3>
+<h3 id="3.1">3.1 统计delegate,undelegate,claim总量</h3>
 
 * `GET /api/sum` 
 * 参数 
