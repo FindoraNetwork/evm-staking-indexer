@@ -242,7 +242,8 @@ pub async fn get_delegators_of_validator(
     let page_size = params.page_size.unwrap_or(10);
 
     let sql_total = r#"SELECT count(distinct delegator) FROM evm_audit WHERE validator=$1"#;
-    let sql_query = r#"SELECT DISTINCT delegator,sum(amount) AS s,dense_rank() over (order by sum(amount) desc) rn FROM evm_audit WHERE validator=$1 GROUP BY delegator ORDER BY rn limit $2 offset $3;"#;
+    let sql_query = r#"SELECT DISTINCT delegator,sum(amount),dense_rank() over (order by sum(amount) desc) rank
+        FROM evm_audit WHERE validator=$1 GROUP BY delegator ORDER BY rank LIMIT $2 OFFSET $3"#;
     let row = sqlx::query(sql_total)
         .bind(&params.0.validator)
         .fetch_one(&mut *pool)
@@ -258,13 +259,13 @@ pub async fn get_delegators_of_validator(
     let mut res: Vec<DelegatorOfValidatorResponse> = vec![];
     for r in rows {
         let delegator: String = r.try_get("delegator")?;
-        let amount: BigDecimal = r.try_get("s")?;
-        let rank: i64 = r.try_get("rn")?;
+        let amount: BigDecimal = r.try_get("sum")?;
+        let rank: i64 = r.try_get("rank")?;
 
         res.push(DelegatorOfValidatorResponse {
             delegator,
             amount: amount.to_string(),
-            rank
+            rank,
         })
     }
 
