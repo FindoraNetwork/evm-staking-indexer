@@ -5,7 +5,8 @@
 * [1.3 获取validator的delegate记录](#1.3)
 * [1.4 获取validator的undelegate记录](#1.4)
 * [1.5 获取validator最近10日vote变化](#1.5)
-* [1.6 获取质押到validator的delegator](#1.6)
+* [1.6 获取质押到validator的delegator集合](#1.6)
+* [1.7 获取delegator所质押的validator集合](#1.7)
 
 ## [Contract](#2)
 * [2.1 获取bound数量](#2.1)
@@ -398,7 +399,7 @@
 }
 ```
 
-<h3 id="1.6">1.6 获取质押到validator的delegator</h3>
+<h3 id="1.6">1.6 获取质押到validator的delegator集合</h3>
 
 * `GET /api/validator/delegators`
 * 参数
@@ -461,6 +462,32 @@
 }
 ```
 
+<h3 id="1.7">1.7 获取delegator所质押的validator集合</h3>
+
+* `GET /api/delegator/validators`
+* 参数
+
+| 参数        | 类型     | 必传 | 说明          |
+|-----------|--------|----|-------------|
+| delegator | string | Y  | delegator地址 |
+| page      | number | N  | 页码，默认1      |
+| page_size | number | N  | 页大小，默认10    |
+
+* Request: `http://localhost/api/delegator/validators?delegator=0xc813c256f3f89b190e0ab86a5fe87845f9cba84b&page=1&page_size=20`
+* Response:
+```json
+{
+  "total": 4,
+  "page": 1,
+  "page_size": 10,
+  "data": [
+    "0x431500ee574ce0c22bfad987fb4054185d5e8af2",
+    "0x68299681f8cd2a772c2dd3d2d2d9c498d46f82ed",
+    "0x971a6ec907d404fb464c123e09faa1d10de13ec8",
+    "0xd87c24a44cbe0d41f204a6730ede8d163ed4535a"
+  ]
+}
+```
 
 <h3 id="2.1">2.1 获取bound数量</h3>
 
