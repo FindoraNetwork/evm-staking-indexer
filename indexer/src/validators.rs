@@ -1,6 +1,7 @@
 use crate::error::Result;
 use crate::types::{
-    QueryResult, ValidatorLatest20Response, ValidatorResponse, ValidatorVoteResponse,
+    DelegatorOfValidatorResponse, QueryResult, ValidatorLatest20Response, ValidatorResponse,
+    ValidatorVoteResponse,
 };
 use crate::AppState;
 use axum::extract::{Query, State};
@@ -223,4 +224,52 @@ pub async fn get_latest20(
     }
 
     Ok(Json(latest))
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct DelegatorsOfValidatorParams {
+    pub validator: String,
+    pub page: Option<i32>,
+    pub page_size: Option<i32>,
+}
+
+pub async fn get_delegators_of_validator(
+    State(state): State<Arc<AppState>>,
+    params: Query<DelegatorsOfValidatorParams>,
+) -> Result<Json<QueryResult<Vec<DelegatorOfValidatorResponse>>>> {
+    let mut pool = state.pool.acquire().await?;
+    let page = params.page.unwrap_or(1);
+    let page_size = params.page_size.unwrap_or(10);
+
+    let sql_total = r#"SELECT count(distinct delegator) FROM evm_audit WHERE validator=$1"#;
+    let sql_query = r#"SELECT DISTINCT delegator,sum(amount) AS s FROM evm_audit WHERE validator=$1 GROUP BY delegator ORDER BY s DESC LIMIT $2 OFFSET $3"#;
+    let row = sqlx::query(sql_total)
+        .bind(&params.0.validator)
+        .fetch_one(&mut *pool)
+        .await?;
+    let total: i64 = row.try_get("count")?;
+    let rows = sqlx::query(sql_query)
+        .bind(&params.0.validator)
+        .bind(page_size)
+        .bind((page - 1) * page_size)
+        .fetch_all(&mut *pool)
+        .await?;
+
+    let mut res: Vec<DelegatorOfValidatorResponse> = vec![];
+    for r in rows {
+        let delegator: String = r.try_get("delegator")?;
+        let sum_amount: BigDecimal = r.try_get("s")?;
+
+        res.push(DelegatorOfValidatorResponse {
+            delegator,
+            sum_amount: sum_amount.to_string(),
+        })
+    }
+
+    Ok(Json(QueryResult {
+        total,
+        page,
+        page_size,
+        data: res,
+    }))
 }
