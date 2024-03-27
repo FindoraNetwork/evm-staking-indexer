@@ -78,6 +78,7 @@ pub struct ReceiptResponse {
     pub timestamp: i64,
     pub value: Value,
 }
+
 #[derive(Serialize, Deserialize)]
 pub struct StakeResponse {
     pub tx_id: String,
@@ -102,6 +103,7 @@ pub struct DelegateResponse {
     pub amount: String,
     pub timestamp: i64,
 }
+
 #[derive(Serialize, Deserialize)]
 pub struct UndelegateResponse {
     pub block_hash: String,
@@ -109,4 +111,10 @@ pub struct UndelegateResponse {
     pub delegator: String,
     pub amount: String,
     pub timestamp: i64,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct DelegatorOfValidatorResponse {
+    pub delegator: String,
+    pub sum_amount: String,
 }
