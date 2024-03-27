@@ -411,7 +411,7 @@
 
 * Request: `http://localhost/api/validator/delegators?validator=0x431500ee574ce0c22bfad987fb4054185d5e8af2&page=1&page_size=10`
 * Response: 
-  * 按`sum_amount`（质押总量）降序排列
+  * 按`amount`（质押总量）降序排列
 ```json
 {
   "total": 312,
@@ -419,34 +419,34 @@
   "page_size": 10,
   "data": [{
     "delegator": "0x450151c996f45125909fd1d29d1209a670854033",
-    "sum_amount": "7269283505162000000000000"
+    "amount": "7269283505162000000000000"
   }, {
     "delegator": "0xb9c02134ea5e653f86ec05c45ebadd9838f123e1",
-    "sum_amount": "6914050464581000000000000"
+    "amount": "6914050464581000000000000"
   }, {
     "delegator": "0x52306cf77d30cafd00b47012ccf478b6843838ec",
-    "sum_amount": "4000000000000000000000000"
+    "amount": "4000000000000000000000000"
   }, {
     "delegator": "0x22fe1fcaf9aa38addd1449579c0b26f536086b18",
-    "sum_amount": "2599153895486000000000000"
+    "amount": "2599153895486000000000000"
   }, {
     "delegator": "0x7ccaa051d86151f7e9ade047f10a832f3a8e8072",
-    "sum_amount": "2204381223589000000000000"
+    "amount": "2204381223589000000000000"
   }, {
     "delegator": "0x7db6c2e88ad6a888672d9277618f6bcd716b5ad0",
-    "sum_amount": "2128833358001000000000000"
+    "amount": "2128833358001000000000000"
   }, {
     "delegator": "0x1e579ae7c8c3bbc2786f6e955e92795b79697d1d",
-    "sum_amount": "2102925374625000000000000"
+    "amount": "2102925374625000000000000"
   }, {
     "delegator": "0x3b2c16adcb301c6f59d79ac3ef849dcf52ff8e59",
-    "sum_amount": "2072365190000000000000000"
+    "amount": "2072365190000000000000000"
   }, {
     "delegator": "0x8600679f104dd2aa6600afbd1fef852f2e760112",
-    "sum_amount": "1724908374908000000000000"
+    "amount": "1724908374908000000000000"
   }, {
     "delegator": "0xb8e8ab3d9567d45d7bc59c0123de865ba870e935",
-    "sum_amount": "1500032000000000000000000"
+    "amount": "1500032000000000000000000"
   }]
 }
 ```

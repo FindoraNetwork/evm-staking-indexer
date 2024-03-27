@@ -258,11 +258,11 @@ pub async fn get_delegators_of_validator(
     let mut res: Vec<DelegatorOfValidatorResponse> = vec![];
     for r in rows {
         let delegator: String = r.try_get("delegator")?;
-        let sum_amount: BigDecimal = r.try_get("s")?;
+        let amount: BigDecimal = r.try_get("s")?;
 
         res.push(DelegatorOfValidatorResponse {
             delegator,
-            sum_amount: sum_amount.to_string(),
+            amount: amount.to_string(),
         })
     }
 

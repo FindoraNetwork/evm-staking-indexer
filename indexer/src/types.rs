@@ -116,5 +116,5 @@ pub struct UndelegateResponse {
 #[derive(Serialize, Deserialize)]
 pub struct DelegatorOfValidatorResponse {
     pub delegator: String,
-    pub sum_amount: String,
+    pub amount: String,
 }
