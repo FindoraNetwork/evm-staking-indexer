@@ -276,3 +276,47 @@ pub async fn get_delegators_of_validator(
         data: res,
     }))
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct ValidatorOfDelegatorParams {
+    pub delegator: String,
+    pub page: Option<i32>,
+    pub page_size: Option<i32>,
+}
+
+pub async fn get_validators_of_delegator(
+    State(state): State<Arc<AppState>>,
+    params: Query<ValidatorOfDelegatorParams>,
+) -> Result<Json<QueryResult<Vec<String>>>> {
+    let mut pool = state.pool.acquire().await?;
+    let page = params.page.unwrap_or(1);
+    let page_size = params.page_size.unwrap_or(10);
+
+    let sql_total = r#"SELECT count(distinct validator) FROM evm_audit WHERE delegator=$1"#;
+    let row = sqlx::query(sql_total)
+        .bind(&params.0.delegator)
+        .fetch_one(&mut *pool)
+        .await?;
+    let total: i64 = row.try_get("count")?;
+
+    let sql_query =
+        r#"SELECT distinct validator FROM evm_audit WHERE delegator=$1 LIMIT $2 OFFSET $3"#;
+    let rows = sqlx::query(sql_query)
+        .bind(&params.0.delegator)
+        .bind(page_size)
+        .bind((page - 1) * page_size)
+        .fetch_all(&mut *pool)
+        .await?;
+    let mut validators: Vec<String> = vec![];
+    for r in rows {
+        let validator: String = r.try_get("validator")?;
+        validators.push(validator);
+    }
+
+    Ok(Json(QueryResult {
+        total,
+        page,
+        page_size,
+        data: validators,
+    }))
+}
