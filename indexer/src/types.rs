@@ -117,4 +117,5 @@ pub struct UndelegateResponse {
 pub struct DelegatorOfValidatorResponse {
     pub delegator: String,
     pub amount: String,
+    pub rank: i64,
 }
