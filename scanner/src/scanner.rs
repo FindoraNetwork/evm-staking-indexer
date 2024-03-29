@@ -145,7 +145,7 @@ impl RpcCaller {
             .naive_utc();
 
         for tx_hash in block.transactions {
-            info!("Syncing tx receipt: {:?}", tx_hash);
+            debug!("Syncing tx receipt: {:?}", tx_hash);
             let tx_id = encode_prefixed(tx_hash.0);
             let receipt_opt = self.provider.get_transaction_receipt(tx_hash).await?;
             if receipt_opt.is_none() {
