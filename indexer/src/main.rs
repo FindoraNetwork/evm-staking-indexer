@@ -14,7 +14,7 @@ use crate::contract::{
     get_validator_data, get_validator_status,
 };
 use crate::delegate::{get_delegator_delegate_records, get_validator_delegate_records};
-use crate::mint::get_delegator_mint_records;
+use crate::mint::{get_delegator_mint_records, get_validator_mint_records};
 use crate::receipt::get_receipts;
 use crate::stake::get_stake_records;
 use crate::undelegate::{get_delegator_undelegate_records, get_validator_undelegate_records};
@@ -124,6 +124,10 @@ async fn main() -> Result<()> {
         .route(
             "/api/records/mint/delegator",
             get(get_delegator_mint_records),
+        )
+        .route(
+            "/api/records/mint/validator",
+            get(get_validator_mint_records),
         )
         .route("/api/diff/vote", get(get_validator_votes))
         .route("/api/records/stake", get(get_stake_records))
