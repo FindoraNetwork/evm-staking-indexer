@@ -10,6 +10,21 @@ pub struct QueryResult<T> {
 }
 
 #[derive(Serialize, Deserialize)]
+pub struct MintResponse {
+    pub block_num: i64,
+    pub timestamp: i64,
+    pub tx: String,
+    pub validator: String,
+    pub delegator: String,
+    pub amount: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct ValidatorSumRewardResponse {
+    pub reward: String,
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct ValidatorVoteResponse {
     pub block_num: i64,
     pub should_vote: i32,
