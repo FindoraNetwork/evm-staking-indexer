@@ -11,7 +11,9 @@
 * [1.7 获取delegator所质押的validator集合](#1.7)
 * [1.8 获取地址（delegator）的delegate记录](#1.8)
 * [1.9 获取地址（delegator）的undelegate记录](#1.9)
-
+* [1.10 获取delegator的mint记录（delegator提取/领取奖励记录）](#1.10)
+* [1.11 获取validator的mint记录（从validator提取奖励的记录/validator发送奖励记录）](#1.11)
+* [1.12 获取validator发出奖励总数](#1.12)
 
 ## [Contract](#2)
 * [2.1 获取bound数量](#2.1)
@@ -510,8 +512,8 @@
 | page_size | number | N  | 页大小，默认10               |
 
 * Request:
-  * 查询所有delegator的记录：`http://localhost:3000/api/records/delegate/delegator?page=1&page_size=5`
-  * 查询特定delegator的记录: `http://localhost/api/records/delegate/delegator?delegator=0x876ffa3e317d609438d87ecb55eabb71217f9206&page=1&page_size=5`
+  * 查询所有delegate的记录：`http://localhost/api/records/delegate/delegator?page=1&page_size=5`
+  * 查询delegator的记录: `http://localhost/api/records/delegate/delegator?delegator=0x876ffa3e317d609438d87ecb55eabb71217f9206&page=1&page_size=5`
 * Response: 
   * 按timestamp降序排列
 ```json
@@ -571,8 +573,8 @@
 
 
 * Request:
-  * 查询所有delegator的记录：`http://localhost/api/records/undelegate/delegator?page=1&page_size=5`
-  * 查询特定delegator的记录: `http://localhost/api/records/undelegate/delegator?delegator=0x2205f3969aab00fa34bcb6c0b636e8a1c5624bedpage=1&page_size=5`
+  * 查询所有undelegate的记录：`http://localhost/api/records/undelegate/delegator?page=1&page_size=5`
+  * 查询delegator的记录: `http://localhost/api/records/undelegate/delegator?delegator=0x2205f3969aab00fa34bcb6c0b636e8a1c5624bedpage=1&page_size=5`
 * Response:
   * 按timestamp降序排列
 ```json
@@ -611,6 +613,96 @@
 		"amount": "19764620608000000000000",
 		"timestamp": 1695726534
 	}]
+}
+```
+
+<h3 id="1.10">1.10 获取delegator的mint记录</h3>
+
+* `GET /api/records/mint/delegator`
+
+| 参数        | 类型     | 必传 | 说明                     |
+|-----------|--------|----|------------------------|
+| delegator | string | N  | delegator地址，不传则返回所有的记录 |
+| page      | number | N  | 页码，默认1                 |
+| page_size | number | N  | 页大小，默认10               |
+
+* Request:
+  * 查询delegator的记录：`http://localhost/api/records/mint/delegator?delegator=0x61273d4a0221d8e25f364ae93bedc04380b7ecd9&page=1&page_size=5`
+  * 查询所有的记录：`http://localhostapi/records/mint/delegator?page=1&page_size=5`
+* Response:
+  * 按timestamp降序排列
+```json
+{
+  "total": 65,
+  "page": 1,
+  "page_size": 5,
+  "data": [{
+    "block_num": 4713937,
+    "timestamp": 1697266725,
+    "tx": "0x39fca6ecb2ad2414bc19f28f2b392bbce7a014752e61b8ef210626d593cf093d",
+    "validator": "0xd518c4f95a3f39ed853a2614566897c4ad5a008f",
+    "delegator": "0x61273d4a0221d8e25f364ae93bedc04380b7ecd9",
+    "amount": "28232888000000000000"
+  }, {
+    "block_num": 4712072,
+    "timestamp": 1697230192,
+    "tx": "0xbca9e5de5920350afad40e8d3de6be23a59d4b4e35320d68b805747b5643cde8",
+    "validator": "0xd518c4f95a3f39ed853a2614566897c4ad5a008f",
+    "delegator": "0x61273d4a0221d8e25f364ae93bedc04380b7ecd9",
+    "amount": "128176093000000000000"
+  }, {
+    "block_num": 4711410,
+    "timestamp": 1697217390,
+    "tx": "0xecdd6365aca2cfcffbef28f03e8ec0a4215f0bde28b4d7e14b64ec3776055c3e",
+    "validator": "0x09ef1db6b67d1cbf7eba6bd9b204611848993df7",
+    "delegator": "0x5eebdc0394b132932ba766974aec2e504f65762f",
+    "amount": "37910506462000000000000"
+  }, {
+    "block_num": 4711319,
+    "timestamp": 1697215579,
+    "tx": "0x5ed21a9baf9f9a71e4fbe11ef3fb7b8b3a512d9cc35fc2da5b1530599b1662bb",
+    "validator": "0x09ef1db6b67d1cbf7eba6bd9b204611848993df7",
+    "delegator": "0x296bbfb491c8eb9e013ecbfcb8104fb03c534af9",
+    "amount": "104330148000000000000"
+  }, {
+    "block_num": 4711319,
+    "timestamp": 1697215579,
+    "tx": "0xebf64a069d5cb01d0de3e94675fca4de6ddddec42dfea78bcefde3d91eaa0b22",
+    "validator": "0x2a75d9238dbbf14891f7bffbba7ef86ca0e98cc9",
+    "delegator": "0x296bbfb491c8eb9e013ecbfcb8104fb03c534af9",
+    "amount": "115231000000000000"
+  }]
+}
+```
+
+<h3 id="1.11">1.11 获取validator发出奖励总数</h3>
+
+* `GET /api/records/mint/validator`
+
+| 参数        | 类型     | 必传 | 说明                     |
+|-----------|--------|----|------------------------|
+| validator | string | N  | validator地址，不传则返回所有的记录 |
+| page      | number | N  | 页码，默认1                 |
+| page_size | number | N  | 页大小，默认10               |
+
+
+
+
+
+<h3 id="1.12">1.12 获取validator发出奖励总数</h3>
+
+* `GET /api/reward/sum`
+* 参数
+
+| 参数        | 类型     | 必传 | 说明          |
+|-----------|--------|----|-------------|
+| validator | string | Y  | validator地址 |
+
+* Request: `http://localhost/api/reward/sum?validator=0xd518c4f95a3f39ed853a2614566897c4ad5a008f`
+* Response:
+```json
+{
+  "reward": "6875273819000000000000"
 }
 ```
 
