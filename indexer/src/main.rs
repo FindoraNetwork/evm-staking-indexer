@@ -10,7 +10,7 @@ mod validators;
 
 use crate::contract::{
     get_delegator_bound, get_delegator_debt, get_delegator_reward, get_delegator_sum,
-    get_validator_data,
+    get_validator_data, get_validator_status,
 };
 use crate::delegate::get_delegate_records;
 use crate::receipt::get_receipts;
@@ -116,6 +116,7 @@ async fn main() -> Result<()> {
         .route("/api/debt", get(get_delegator_debt))
         .route("/api/sum", get(get_delegator_sum))
         .route("/api/vdata", get(get_validator_data))
+        .route("/api/vstatus", get(get_validator_status))
         .layer(cors)
         .with_state(app_state);
 
