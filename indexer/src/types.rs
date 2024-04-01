@@ -119,3 +119,14 @@ pub struct DelegatorOfValidatorResponse {
     pub amount: String,
     pub rank: i64,
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct ValidatorDataResponse {
+    pub public_key: String,
+    pub public_key_type: u8,
+    pub rate: String,
+    pub staker: String,
+    pub power: String,
+    pub total_unbound_amount: String,
+    pub begin_block: u64,
+}

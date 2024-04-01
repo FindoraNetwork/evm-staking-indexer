@@ -1,14 +1,46 @@
 use crate::error::{IndexerError, Result};
-use crate::types::{BoundResponse, DebtResponse, DelegatorSumResponse, RewardResponse};
+use crate::types::{
+    BoundResponse, DebtResponse, DelegatorSumResponse, RewardResponse, ValidatorDataResponse,
+};
 use crate::AppState;
 use axum::extract::{Query, State};
 use axum::Json;
 use ethers::types::H160;
+use ethers::utils::hex;
 use serde::{Deserialize, Serialize};
 use sqlx::types::BigDecimal;
 use sqlx::Row;
 use std::str::FromStr;
 use std::sync::Arc;
+
+#[derive(Serialize, Deserialize)]
+pub struct ValidatorDataParams {
+    pub address: String,
+}
+
+pub async fn get_validator_data(
+    State(state): State<Arc<AppState>>,
+    params: Query<ValidatorDataParams>,
+) -> Result<Json<ValidatorDataResponse>> {
+    let staking = state.staking.clone();
+    let validator = H160::from_str(&params.address)?;
+
+    match staking.validators(validator).call().await {
+        Ok(data) => {
+            let res = ValidatorDataResponse {
+                public_key: data.0.to_string(),
+                public_key_type: data.1,
+                rate: data.2.to_string(),
+                staker: hex::encode_prefixed(&data.3.as_bytes()),
+                power: data.4.to_string(),
+                total_unbound_amount: data.5.to_string(),
+                begin_block: data.6.as_u64(),
+            };
+            Ok(Json(res))
+        }
+        Err(e) => Err(IndexerError::Custom(e.to_string())),
+    }
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct DelegatorBoundParams {

@@ -12,7 +12,8 @@
 * [2.1 获取bound数量](#2.1)
 * [2.2 获取reward数量](#2.2)
 * [2.3 获取debt数量](#2.3)
-
+* [2.4 获取validator数据](#2.4)
+* 
 ## [Other](#3)
 * [3.1 统计delegate,undelegate,claim总量](#3.1)
 
@@ -543,6 +544,30 @@
   "debt": "96558069283467635"
 }
 ```
+
+<h3 id="2.4">2.4  获取validator数据</h3>
+
+* `GET /api/vdata`
+* 参数
+
+| 参数      | 类型     | 必传 | 说明          |
+|---------|--------|----|-------------|
+| address | string | Y  | validator地址 |
+
+* Request: `http://localhost/api/vdata?address=0xd518c4f95a3f39ed853a2614566897c4ad5a008f`
+* Response:
+```json
+{
+  "public_key": "0x7d8cd5a5c3560717c356c25dfd5ac4dba7041b5fe97f0c94ff5e095876b29e93",
+  "public_key_type": 2,
+  "rate": "50000",
+  "staker": "0x950b02daba544942456fc3158b49d2f3c2d83e26",
+  "power": "173888919852423290891303799",
+  "total_unbound_amount": "65869059538217509715792833",
+  "begin_block": 999945591479922200
+}
+```
+
 
 <h3 id="3.1">3.1 统计delegate,undelegate,claim总量</h3>
 

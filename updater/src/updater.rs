@@ -147,7 +147,7 @@ async fn update_validator_task(
             validator.pubkey = vdata.0.to_string();
             validator.pubkey_type = vdata.1 as i32;
             validator.rate = BigDecimal::from_str(&vdata.2.to_string()).unwrap_or_default();
-            validator.staker = encode_prefixed(&vdata.3.to_string());
+            validator.staker = encode_prefixed(&vdata.3.as_bytes());
             validator.power = BigDecimal::from_str(&vdata.4.to_string()).unwrap_or_default();
             validator.total_unbound_amount =
                 BigDecimal::from_str(&vdata.5.to_string()).unwrap_or_default();
