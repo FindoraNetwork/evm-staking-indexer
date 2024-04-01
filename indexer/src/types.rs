@@ -130,3 +130,13 @@ pub struct ValidatorDataResponse {
     pub total_unbound_amount: String,
     pub begin_block: u64,
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct ValidatorStatusResponse {
+    pub heap_index_off1: String,
+    pub is_active: bool,
+    pub jailed: bool,
+    pub unjail_datetime: u64,
+    pub should_vote: u16,
+    pub voted: u16,
+}

@@ -1,6 +1,7 @@
 use crate::error::{IndexerError, Result};
 use crate::types::{
     BoundResponse, DebtResponse, DelegatorSumResponse, RewardResponse, ValidatorDataResponse,
+    ValidatorStatusResponse,
 };
 use crate::AppState;
 use axum::extract::{Query, State};
@@ -12,6 +13,34 @@ use sqlx::types::BigDecimal;
 use sqlx::Row;
 use std::str::FromStr;
 use std::sync::Arc;
+
+#[derive(Serialize, Deserialize)]
+pub struct ValidatorStatusParams {
+    pub address: String,
+}
+
+pub async fn get_validator_status(
+    State(state): State<Arc<AppState>>,
+    params: Query<ValidatorStatusParams>,
+) -> Result<Json<ValidatorStatusResponse>> {
+    let staking = state.staking.clone();
+    let validator = H160::from_str(&params.address)?;
+
+    match staking.validator_status(validator).call().await {
+        Ok(data) => {
+            let res = ValidatorStatusResponse {
+                heap_index_off1: data.0.to_string(),
+                is_active: data.1,
+                jailed: data.2,
+                unjail_datetime: data.3,
+                should_vote: data.4,
+                voted: data.5,
+            };
+            Ok(Json(res))
+        }
+        Err(e) => Err(IndexerError::Custom(e.to_string())),
+    }
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct ValidatorDataParams {

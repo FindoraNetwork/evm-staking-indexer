@@ -13,7 +13,7 @@
 * [2.2 获取reward数量](#2.2)
 * [2.3 获取debt数量](#2.3)
 * [2.4 获取validator数据](#2.4)
-* 
+* [2.5 获取validator状态](#2.5)
 ## [Other](#3)
 * [3.1 统计delegate,undelegate,claim总量](#3.1)
 
@@ -568,6 +568,28 @@
 }
 ```
 
+<h3 id="2.5">2.5  获取validator状态</h3>
+
+* `GET /api/vstatus`
+* 参数
+
+| 参数      | 类型     | 必传 | 说明          |
+|---------|--------|----|-------------|
+| address | string | Y  | validator地址 |
+
+
+* Request: `http://localhost/api/vstatus?address=0xd518c4f95a3f39ed853a2614566897c4ad5a008f`
+* Response:
+```json
+{
+  "heap_index_off1": "54",
+  "is_active": true,
+  "jailed": false,
+  "unjail_datetime": 1697279406,
+  "should_vote": 1445,
+  "voted": 1445
+}
+```
 
 <h3 id="3.1">3.1 统计delegate,undelegate,claim总量</h3>
 
