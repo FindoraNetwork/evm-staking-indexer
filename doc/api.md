@@ -1,4 +1,6 @@
 # Evm Staking Indexer API Spec
+
+
 ## [Validator](#1)
 * [1.1 获取Validator集合](#1.1)
 * [1.2 获取validator最近20笔质押变化](#1.2)
@@ -8,6 +10,8 @@
 * [1.6 获取质押到validator的delegator集合](#1.6)
 * [1.7 获取delegator所质押的validator集合](#1.7)
 * [1.8 获取地址（delegator）的delegate记录](#1.8)
+* [1.9 获取地址（delegator）的undelegate记录](#1.9)
+
 
 ## [Contract](#2)
 * [2.1 获取bound数量](#2.1)
@@ -16,8 +20,10 @@
 * [2.4 获取validator数据](#2.4)
 * [2.5 获取validator状态](#2.5)
 
+
 ## [Other](#3)
 * [3.1 统计delegate,undelegate,claim总量](#3.1)
+
 
 <h3 id="1.1">1.1 获取Validator集合</h3>
 
@@ -499,12 +505,12 @@
 
 | 参数        | 类型     | 必传 | 说明                     |
 |-----------|--------|----|------------------------|
-| delegator | string | Y  | delegator地址，不传则返回所有的记录 |
+| delegator | string | N  | delegator地址，不传则返回所有的记录 |
 | page      | number | N  | 页码，默认1                 |
 | page_size | number | N  | 页大小，默认10               |
 
 * Request:
-  * 查询所有delegate记录：`http://localhost:3000/api/records/delegate/delegator?page=1&page_size=5`
+  * 查询所有delegator的记录：`http://localhost:3000/api/records/delegate/delegator?page=1&page_size=5`
   * 查询特定delegator的记录: `http://localhost/api/records/delegate/delegator?delegator=0x876ffa3e317d609438d87ecb55eabb71217f9206&page=1&page_size=5`
 * Response: 
   * 按timestamp降序排列
@@ -549,6 +555,62 @@
       "timestamp": 1695722301
     }
   ]
+}
+```
+
+<h3 id="1.9">1.9 获取地址（delegator）的undelegate记录</h3>
+
+* `GET /api/records/undelegate/delegator`
+* 参数
+
+| 参数        | 类型     | 必传 | 说明                     |
+|-----------|--------|----|------------------------|
+| delegator | string | N  | delegator地址，不传则返回所有的记录 |
+| page      | number | N  | 页码，默认1                 |
+| page_size | number | N  | 页大小，默认10               |
+
+
+* Request:
+  * 查询所有delegator的记录：`http://localhost/api/records/undelegate/delegator?page=1&page_size=5`
+  * 查询特定delegator的记录: `http://localhost/api/records/undelegate/delegator?delegator=0x2205f3969aab00fa34bcb6c0b636e8a1c5624bedpage=1&page_size=5`
+* Response:
+  * 按timestamp降序排列
+```json
+{
+	"total": 122,
+	"page": 1,
+	"page_size": 5,
+	"data": [{
+		"block_hash": "0xf928683f9076a94c9bac6c1a93ccf4aa20e489d1c6fbef2d23a90bec675f1a1d",
+		"validator": "0xf0eab3a51d7f32fcd8a6c6f473a8d70d3bfff2d4",
+		"delegator": "0x2205f3969aab00fa34bcb6c0b636e8a1c5624bed",
+		"amount": "9999980000000000000000000",
+		"timestamp": 1695728413
+	}, {
+		"block_hash": "0xec27de37894cd567e029abbc5ebc23619c33020a77de3cd78e0df6b62d2c35c2",
+		"validator": "0x847248d9dcd36acc070f5cdc9541a84f8b5246cd",
+		"delegator": "0x2205f3969aab00fa34bcb6c0b636e8a1c5624bed",
+		"amount": "103236566237000000000000",
+		"timestamp": 1695727870
+	}, {
+		"block_hash": "0x1f2d343e0b7294b95eed4315685cb73f2820c8601f7bae7573f9fa7cdd5356eb",
+		"validator": "0xf0eab3a51d7f32fcd8a6c6f473a8d70d3bfff2d4",
+		"delegator": "0x2205f3969aab00fa34bcb6c0b636e8a1c5624bed",
+		"amount": "9999980000000000000000000",
+		"timestamp": 1695727122
+	}, {
+		"block_hash": "0xdf69e99b12ffea1dc08ceaad9f4e0be7258ac44b87f09e142b86ac18800ff424",
+		"validator": "0x0c6fe866cb0fc52d9214276d2bd9327610764ab1",
+		"delegator": "0x2205f3969aab00fa34bcb6c0b636e8a1c5624bed",
+		"amount": "386944000000000000",
+		"timestamp": 1695726647
+	}, {
+		"block_hash": "0x055a0813301a43f8cbbe4be77cfdb206cc3ea8806806b9c871ec777b3188c64c",
+		"validator": "0x847248d9dcd36acc070f5cdc9541a84f8b5246cd",
+		"delegator": "0x9a2cf38e324e6ad815e086161ff8fdc8cdd5e6cf",
+		"amount": "19764620608000000000000",
+		"timestamp": 1695726534
+	}]
 }
 ```
 

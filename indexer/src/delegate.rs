@@ -67,15 +67,15 @@ pub async fn get_delegator_delegate_records(
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct GetDelegateRecordsParams {
+pub struct ValidatorDelegateRecordsParams {
     pub validator: Option<String>,
     pub page: Option<i32>,
     pub page_size: Option<i32>,
 }
 
-pub async fn get_delegate_records(
+pub async fn get_validator_delegate_records(
     State(state): State<Arc<AppState>>,
-    params: Query<GetDelegateRecordsParams>,
+    params: Query<ValidatorDelegateRecordsParams>,
 ) -> Result<Json<QueryResult<Vec<DelegateResponse>>>> {
     let mut pool = state.pool.acquire().await?;
     let page = params.page.unwrap_or(1);

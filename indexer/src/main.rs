@@ -12,10 +12,10 @@ use crate::contract::{
     get_delegator_bound, get_delegator_debt, get_delegator_reward, get_delegator_sum,
     get_validator_data, get_validator_status,
 };
-use crate::delegate::{get_delegate_records, get_delegator_delegate_records};
+use crate::delegate::{get_delegator_delegate_records, get_validator_delegate_records};
 use crate::receipt::get_receipts;
 use crate::stake::get_stake_records;
-use crate::undelegate::get_undelegate_records;
+use crate::undelegate::{get_delegator_undelegate_records, get_validator_undelegate_records};
 use crate::validators::{
     get_delegators_of_validator, get_latest20, get_validator_votes, get_validators,
     get_validators_of_delegator,
@@ -109,9 +109,16 @@ async fn main() -> Result<()> {
             "/api/records/delegate/delegator",
             get(get_delegator_delegate_records),
         )
+        .route(
+            "/api/records/undelegate/delegator",
+            get(get_delegator_undelegate_records),
+        )
         .route("/api/diff/latest", get(get_latest20))
-        .route("/api/records/delegate", get(get_delegate_records))
-        .route("/api/records/undelegate", get(get_undelegate_records))
+        .route("/api/records/delegate", get(get_validator_delegate_records))
+        .route(
+            "/api/records/undelegate",
+            get(get_validator_undelegate_records),
+        )
         .route("/api/diff/vote", get(get_validator_votes))
         .route("/api/records/stake", get(get_stake_records))
         .route("/api/receipts", get(get_receipts))
