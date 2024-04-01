@@ -7,6 +7,7 @@
 * [1.5 获取validator最近10日vote变化](#1.5)
 * [1.6 获取质押到validator的delegator集合](#1.6)
 * [1.7 获取delegator所质押的validator集合](#1.7)
+* [1.8 获取地址（delegator）的delegate记录](#1.8)
 
 ## [Contract](#2)
 * [2.1 获取bound数量](#2.1)
@@ -14,6 +15,7 @@
 * [2.3 获取debt数量](#2.3)
 * [2.4 获取validator数据](#2.4)
 * [2.5 获取validator状态](#2.5)
+
 ## [Other](#3)
 * [3.1 统计delegate,undelegate,claim总量](#3.1)
 
@@ -486,6 +488,66 @@
     "0x68299681f8cd2a772c2dd3d2d2d9c498d46f82ed",
     "0x971a6ec907d404fb464c123e09faa1d10de13ec8",
     "0xd87c24a44cbe0d41f204a6730ede8d163ed4535a"
+  ]
+}
+```
+
+<h3 id="1.8">1.8 获取地址（delegator）的delegate记录</h3>
+
+* `GET /api/records/delegate/delegator`
+* 参数
+
+| 参数        | 类型     | 必传 | 说明                     |
+|-----------|--------|----|------------------------|
+| delegator | string | Y  | delegator地址，不传则返回所有的记录 |
+| page      | number | N  | 页码，默认1                 |
+| page_size | number | N  | 页大小，默认10               |
+
+* Request:
+  * 查询所有delegate记录：`http://localhost:3000/api/records/delegate/delegator?page=1&page_size=5`
+  * 查询特定delegator的记录: `http://localhost/api/records/delegate/delegator?delegator=0x876ffa3e317d609438d87ecb55eabb71217f9206&page=1&page_size=5`
+* Response: 
+  * 按timestamp降序排列
+```json
+{
+  "total": 5113,
+  "page": 1,
+  "page_size": 5,
+  "data": [{
+    "block_hash": "0xbfb8f84a77c3ee02f7cf40d2dee62ac9c713ba77cb4ce90f87b0716ca09e8dd5",
+    "validator": "0xd518c4f95a3f39ed853a2614566897c4ad5a008f",
+    "delegator": "0x876ffa3e317d609438d87ecb55eabb71217f9206",
+    "amount": "33000000000000000000",
+    "timestamp": 1695724636
+  },
+    {
+      "block_hash": "0x038da9d3b8c6e080f24aef8d61dbd03ddcc6903da3dd8c92f3d655243716503d",
+      "validator": "0x69e2b6c4c1122172e69af48e0aec36b7f7c8005a",
+      "delegator": "0xccb4e8b208a468f6323312a962c07c2f75ef8eb7",
+      "amount": "1862000000000000000000",
+      "timestamp": 1695724474
+    },
+    {
+      "block_hash": "0x16b2eb7fc1972feeb09b551119a4506de50a5f796a81820908184b681f5f2664",
+      "validator": "0xb4989bbb38287c2af6df0155b55e4073da6c4ba8",
+      "delegator": "0x876ffa3e317d609438d87ecb55eabb71217f9206",
+      "amount": "300000000000000000000",
+      "timestamp": 1695724400
+    },
+    {
+      "block_hash": "0x1405a29669ef9530295ada73881c6a41a66806cbba1b086f6d022b1cc42f4cf6",
+      "validator": "0xbef69a5f5e5ecd3dd9d7f829c6b693f760179b63",
+      "delegator": "0x663da7e09c849cad59670a0844a4043dff2b89c4",
+      "amount": "8779971026000000000000",
+      "timestamp": 1695722301
+    },
+    {
+      "block_hash": "0x1405a29669ef9530295ada73881c6a41a66806cbba1b086f6d022b1cc42f4cf6",
+      "validator": "0xc8d2d4ff0b882243f82c1fb20574c81e4c866e72",
+      "delegator": "0x52f99e02d012ead8fd060dcf1c2ef43e5c327b2d",
+      "amount": "27943311200000000000000",
+      "timestamp": 1695722301
+    }
   ]
 }
 ```
