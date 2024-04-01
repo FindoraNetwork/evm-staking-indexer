@@ -4,6 +4,7 @@ mod receipt;
 mod stake;
 
 mod contract;
+mod mint;
 mod types;
 mod undelegate;
 mod validators;
@@ -13,12 +14,13 @@ use crate::contract::{
     get_validator_data, get_validator_status,
 };
 use crate::delegate::{get_delegator_delegate_records, get_validator_delegate_records};
+use crate::mint::get_delegator_mint_records;
 use crate::receipt::get_receipts;
 use crate::stake::get_stake_records;
 use crate::undelegate::{get_delegator_undelegate_records, get_validator_undelegate_records};
 use crate::validators::{
-    get_delegators_of_validator, get_latest20, get_validator_votes, get_validators,
-    get_validators_of_delegator,
+    get_delegators_of_validator, get_latest20, get_validator_sum_reward, get_validator_votes,
+    get_validators, get_validators_of_delegator,
 };
 use axum::http::Method;
 use axum::routing::get;
@@ -119,6 +121,10 @@ async fn main() -> Result<()> {
             "/api/records/undelegate",
             get(get_validator_undelegate_records),
         )
+        .route(
+            "/api/records/mint/delegator",
+            get(get_delegator_mint_records),
+        )
         .route("/api/diff/vote", get(get_validator_votes))
         .route("/api/records/stake", get(get_stake_records))
         .route("/api/receipts", get(get_receipts))
@@ -128,6 +134,7 @@ async fn main() -> Result<()> {
         .route("/api/sum", get(get_delegator_sum))
         .route("/api/vdata", get(get_validator_data))
         .route("/api/vstatus", get(get_validator_status))
+        .route("/api/reward/sum", get(get_validator_sum_reward))
         .layer(cors)
         .with_state(app_state);
 

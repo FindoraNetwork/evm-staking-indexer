@@ -1,7 +1,7 @@
 use crate::error::Result;
 use crate::types::{
     DelegatorOfValidatorResponse, QueryResult, ValidatorLatest20Response, ValidatorResponse,
-    ValidatorVoteResponse,
+    ValidatorSumRewardResponse, ValidatorVoteResponse,
 };
 use crate::AppState;
 use axum::extract::{Query, State};
@@ -13,6 +13,29 @@ use sqlx::types::BigDecimal;
 use sqlx::Row;
 use std::ops::{Add, Sub};
 use std::sync::Arc;
+
+#[derive(Serialize, Deserialize)]
+pub struct ValidatorSumRewardParams {
+    pub validator: String,
+}
+
+pub async fn get_validator_sum_reward(
+    State(state): State<Arc<AppState>>,
+    params: Query<ValidatorSumRewardParams>,
+) -> Result<Json<ValidatorSumRewardResponse>> {
+    let mut pool = state.pool.acquire().await?;
+
+    let sql_query = r#"SELECT sum(amount) FROM evm_coinbase_mint WHERE validator=$1"#;
+    let row = sqlx::query(sql_query)
+        .bind(&params.validator)
+        .fetch_one(&mut *pool)
+        .await?;
+    let amount: Option<BigDecimal> = row.try_get("sum")?;
+
+    Ok(Json(ValidatorSumRewardResponse {
+        reward: amount.unwrap_or_default().to_string(),
+    }))
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct GetVoteParams {
