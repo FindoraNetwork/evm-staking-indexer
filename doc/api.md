@@ -574,7 +574,7 @@
 
 * Request:
   * 查询所有的记录：`http://localhost/api/records/undelegate/delegator?page=1&page_size=5`
-  * 查询delegator的记录: `http://localhost/api/records/undelegate/delegator?delegator=0x2205f3969aab00fa34bcb6c0b636e8a1c5624bedpage=1&page_size=5`
+  * 查询delegator的记录: `http://localhost/api/records/undelegate/delegator?delegator=0x2205f3969aab00fa34bcb6c0b636e8a1c5624bed&page=1&page_size=5`
 * Response:
   * 按timestamp降序排列
 ```json
