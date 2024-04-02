@@ -512,7 +512,7 @@
 | page_size | number | N  | 页大小，默认10               |
 
 * Request:
-  * 查询所有delegate的记录：`http://localhost/api/records/delegate/delegator?page=1&page_size=5`
+  * 查询所有的记录：`http://localhost/api/records/delegate/delegator?page=1&page_size=5`
   * 查询delegator的记录: `http://localhost/api/records/delegate/delegator?delegator=0x876ffa3e317d609438d87ecb55eabb71217f9206&page=1&page_size=5`
 * Response: 
   * 按timestamp降序排列
@@ -573,7 +573,7 @@
 
 
 * Request:
-  * 查询所有undelegate的记录：`http://localhost/api/records/undelegate/delegator?page=1&page_size=5`
+  * 查询所有的记录：`http://localhost/api/records/undelegate/delegator?page=1&page_size=5`
   * 查询delegator的记录: `http://localhost/api/records/undelegate/delegator?delegator=0x2205f3969aab00fa34bcb6c0b636e8a1c5624bedpage=1&page_size=5`
 * Response:
   * 按timestamp降序排列
@@ -626,9 +626,7 @@
 | page      | number | N  | 页码，默认1                 |
 | page_size | number | N  | 页大小，默认10               |
 
-* Request:
-  * 查询delegator的记录：`http://localhost/api/records/mint/delegator?delegator=0x61273d4a0221d8e25f364ae93bedc04380b7ecd9&page=1&page_size=5`
-  * 查询所有的记录：`http://localhostapi/records/mint/delegator?page=1&page_size=5`
+* Request: `http://localhost/api/records/mint/delegator?delegator=0x61273d4a0221d8e25f364ae93bedc04380b7ecd9&page=1&page_size=5`
 * Response:
   * 按timestamp降序排列
 ```json
@@ -675,7 +673,7 @@
 }
 ```
 
-<h3 id="1.11">1.11 获取validator发出奖励总数</h3>
+<h3 id="1.11">1.11 获取validator的mint记录</h3>
 
 * `GET /api/records/mint/validator`
 
@@ -685,8 +683,52 @@
 | page      | number | N  | 页码，默认1                 |
 | page_size | number | N  | 页大小，默认10               |
 
-
-
+* Request: `http://localhost/api/records/mint/validator?validator=0xd518c4f95a3f39ed853a2614566897c4ad5a008f`
+* Response:
+  * 按timestamp降序排列
+```json
+{
+	"total": 5,
+	"page": 1,
+	"page_size": 10,
+	"data": [{
+		"block_num": 4713937,
+		"timestamp": 1697266725,
+		"tx": "0x39fca6ecb2ad2414bc19f28f2b392bbce7a014752e61b8ef210626d593cf093d",
+		"validator": "0xd518c4f95a3f39ed853a2614566897c4ad5a008f",
+		"delegator": "0x61273d4a0221d8e25f364ae93bedc04380b7ecd9",
+		"amount": "28232888000000000000"
+	}, {
+		"block_num": 4712072,
+		"timestamp": 1697230192,
+		"tx": "0xbca9e5de5920350afad40e8d3de6be23a59d4b4e35320d68b805747b5643cde8",
+		"validator": "0xd518c4f95a3f39ed853a2614566897c4ad5a008f",
+		"delegator": "0x61273d4a0221d8e25f364ae93bedc04380b7ecd9",
+		"amount": "128176093000000000000"
+	}, {
+		"block_num": 4697878,
+		"timestamp": 1696951051,
+		"tx": "0xfad224d443e679e442cdd1dded6dd9d74b449f5cb7e009d7715ad94488c0fb63",
+		"validator": "0xd518c4f95a3f39ed853a2614566897c4ad5a008f",
+		"delegator": "0x89f2838d8b9db5cacc18dfc32f2cd7956b41068a",
+		"amount": "4725953248000000000000"
+	}, {
+		"block_num": 4665263,
+		"timestamp": 1696303745,
+		"tx": "0xb7854e09d43d8c54dff8101897f1f187dcece6fd37d50459edc19abde8e8bf79",
+		"validator": "0xd518c4f95a3f39ed853a2614566897c4ad5a008f",
+		"delegator": "0x876ffa3e317d609438d87ecb55eabb71217f9206",
+		"amount": "606259768000000000000"
+	}, {
+		"block_num": 4661107,
+		"timestamp": 1696222070,
+		"tx": "0x1ac470bbc942188720da4b0054ea07f7665215bf4f55847319e565c156a9f79e",
+		"validator": "0xd518c4f95a3f39ed853a2614566897c4ad5a008f",
+		"delegator": "0xa7357c10da2e7ae457f9b972dc7b1cea066d8cde",
+		"amount": "1386651822000000000000"
+	}]
+}
+```
 
 
 <h3 id="1.12">1.12 获取validator发出奖励总数</h3>
