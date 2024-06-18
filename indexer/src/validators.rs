@@ -14,6 +14,8 @@ use sqlx::Row;
 use std::ops::{Add, Sub};
 use std::sync::Arc;
 
+const SQL_QUERY1: &'static str = "ORDER BY power DESC LIMIT 1 OFFSET 0";
+
 #[derive(Serialize, Deserialize)]
 pub struct ValidatorSumRewardParams {
     pub validator: String,
@@ -125,7 +127,7 @@ pub async fn get_validators(
         WHERE ev.block_num=(SELECT max(block_num) FROM evm_validators) ".to_string();
 
     let mut query_params: Vec<String> = vec![];
-    if let Some(validator) = params.0.validator {
+    if let Some(ref validator) = params.0.validator {
         query_params.push(format!("ev.validator='{}' ", validator));
     }
     if let Some(online) = params.0.online {
@@ -142,16 +144,19 @@ pub async fn get_validators(
             .add("AND ")
             .add(query_params.join("AND ").as_str());
     }
-
-    sql_query = sql_query.add(
-        format!(
-            "ORDER BY power DESC LIMIT {} OFFSET {}",
-            page_size,
-            (page - 1) * page_size
-        )
-        .as_str(),
-    );
-
+    if params.0.validator.is_some() {
+        sql_query = sql_query.add(SQL_QUERY1);
+    } else {
+        sql_query = sql_query.add(
+            format!(
+                "ORDER BY power DESC LIMIT {} OFFSET {}",
+                page_size,
+                (page - 1) * page_size
+            )
+            .as_str(),
+        );
+    }
+    println!("{}", sql_query);
     let row = sqlx::query(&sql_total).fetch_one(&mut *pool).await?;
     let total: i64 = row.try_get("count")?;
 
