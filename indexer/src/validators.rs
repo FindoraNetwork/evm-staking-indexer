@@ -156,7 +156,7 @@ pub async fn get_validators(
             .as_str(),
         );
     }
-    println!("{}", sql_query);
+
     let row = sqlx::query(&sql_total).fetch_one(&mut *pool).await?;
     let total: i64 = row.try_get("count")?;
 
