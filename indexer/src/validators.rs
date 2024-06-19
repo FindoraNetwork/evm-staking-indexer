@@ -113,17 +113,17 @@ pub async fn get_validators(
     let page_size = params.page_size.unwrap_or(10);
 
     let mut sql_total = "SELECT count(*) \
-        FROM evm_stakes es \
-        LEFT JOIN evm_validators ev \
-        ON es.validator=ev.validator \
+        FROM evm_validators ev \
+        LEFT JOIN evm_stakes es \
+        ON ev.validator=es.validator \
         WHERE ev.block_num=(SELECT max(block_num) FROM evm_validators) "
         .to_string();
 
     let mut sql_query = "SELECT ev.validator,ev.pubkey,ev.pubkey_type,ev.rate,ev.staker,ev.power,\
         ev.unbound,ev.punish_rate,ev.begin_block,ev.active,ev.jailed,ev.unjail_time,ev.should_vote,ev.voted,es.memo \
-        FROM evm_stakes es \
-        LEFT JOIN evm_validators ev \
-        ON es.validator=ev.validator \
+        FROM evm_validators ev \
+        LEFT JOIN evm_stakes es \
+        ON ev.validator=es.validator \
         WHERE ev.block_num=(SELECT max(block_num) FROM evm_validators) ".to_string();
 
     let mut query_params: Vec<String> = vec![];
