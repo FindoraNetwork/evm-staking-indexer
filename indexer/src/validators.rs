@@ -112,7 +112,7 @@ pub async fn get_validators(
     let page = params.page.unwrap_or(1);
     let page_size = params.page_size.unwrap_or(10);
 
-    let mut sql_total = "SELECT count(block_num) \
+    let mut sql_total = "SELECT count(ev.block_num) \
         FROM evm_validators ev \
         LEFT JOIN evm_stakes es \
         ON ev.validator=es.validator \
