@@ -26,13 +26,13 @@ pub async fn get_delegator_delegate_records(
 
     let (sql_total, sql_query) = if let Some(delegator) = params.0.delegator {
         (
-            format!("SELECT count(*) FROM evm_delegations WHERE delegator='{}'", delegator)
+            format!("SELECT count(block_num) FROM evm_delegations WHERE delegator='{}'", delegator)
             ,
             format!("SELECT block_id,validator,delegator,tm,amount FROM evm_delegations WHERE delegator='{}' ORDER BY tm DESC LIMIT {} OFFSET {}", delegator, page_size, (page-1)*page_size)
         )
     } else {
         (
-            "SELECT count(*) FROM evm_delegations".to_string()
+            "SELECT count(block_num) FROM evm_delegations".to_string()
             ,
             format!("SELECT block_id,validator,delegator,tm,amount FROM evm_delegations ORDER BY tm DESC LIMIT {} OFFSET {}", page_size, (page-1)*page_size))
     };
@@ -83,13 +83,13 @@ pub async fn get_validator_delegate_records(
 
     let (sql_total, sql_query) = if let Some(validator) = params.0.validator {
         (
-            format!("SELECT count(*) FROM evm_delegations WHERE validator='{}'", validator)
+            format!("SELECT count(block_num) FROM evm_delegations WHERE validator='{}'", validator)
             ,
             format!("SELECT block_id,validator,delegator,tm,amount FROM evm_delegations WHERE validator='{}' ORDER BY tm DESC LIMIT {} OFFSET {}", validator, page_size, (page-1)*page_size)
         )
     } else {
         (
-            "SELECT count(*) FROM evm_delegations".to_string()
+            "SELECT count(block_num) FROM evm_delegations".to_string()
             ,
             format!("SELECT block_id,validator,delegator,tm,amount FROM evm_delegations ORDER BY tm DESC LIMIT {} OFFSET {}", page_size, (page-1)*page_size))
     };

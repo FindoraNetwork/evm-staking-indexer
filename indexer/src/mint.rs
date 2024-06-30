@@ -27,7 +27,7 @@ pub async fn get_validator_mint_records(
     let (sql_total, sql_query) = if let Some(validator) = params.0.validator {
         (
             format!(
-                "SELECT count(*) FROM evm_coinbase_mint WHERE validator='{}'",
+                "SELECT count(block_num) FROM evm_coinbase_mint WHERE validator='{}'",
                 validator
             ),
             format!(
@@ -40,7 +40,7 @@ pub async fn get_validator_mint_records(
         )
     } else {
         (
-            "SELECT count(*) FROM evm_coinbase_mint".to_string(),
+            "SELECT count(block_num) FROM evm_coinbase_mint".to_string(),
             format!(
                 "SELECT tx_id,block_num,tm,validator,delegator,amount FROM evm_coinbase_mint \
             ORDER BY tm DESC LIMIT {} OFFSET {}",
@@ -98,7 +98,7 @@ pub async fn get_delegator_mint_records(
     let (sql_total, sql_query) = if let Some(delegator) = params.0.delegator {
         (
             format!(
-                "SELECT count(*) FROM evm_coinbase_mint WHERE delegator='{}'",
+                "SELECT count(block_num) FROM evm_coinbase_mint WHERE delegator='{}'",
                 delegator
             ),
             format!(
@@ -111,7 +111,7 @@ pub async fn get_delegator_mint_records(
         )
     } else {
         (
-            "SELECT count(*) FROM evm_coinbase_mint".to_string(),
+            "SELECT count(block_num) FROM evm_coinbase_mint".to_string(),
             format!(
                 "SELECT tx_id,block_num,tm,validator,delegator,amount FROM evm_coinbase_mint \
             ORDER BY tm DESC LIMIT {} OFFSET {}",
