@@ -30,7 +30,7 @@ pub async fn get_stake_records(
     let page = params.page.unwrap_or(1);
     let page_size = params.page_size.unwrap_or(10);
 
-    let mut sql_total = "SELECT count(*) FROM evm_stakes ".to_string();
+    let mut sql_total = "SELECT count(height) FROM evm_stakes ".to_string();
     let mut sql_query =
         "SELECT tx_id,block_id,block_num,tm,validator,pubkey,ty,staker,amount,memo,rate FROM evm_stakes ".to_string();
 

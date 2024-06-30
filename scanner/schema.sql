@@ -18,6 +18,7 @@ create table if not exists evm_stakes(
     rate numeric(48) not null,
     primary key(tx_id,validator,staker)
 );
+create index idx_stk_blknum on evm_stakes(block_num);
 
 create table if not exists evm_delegations(
     tx_id varchar(66) not null,
@@ -29,6 +30,7 @@ create table if not exists evm_delegations(
     amount numeric(48) not null,
     primary key(tx_id,validator,delegator)
 );
+create index idx_dlg_blknum on evm_delegations(block_num);
 
 create table if not exists evm_undelegations(
     tx_id varchar(66) not null,
@@ -43,6 +45,7 @@ create table if not exists evm_undelegations(
     op_type integer not null,
     primary key(tx_id,validator,delegator)
 );
+create index idx_udlg_blknum on evm_undelegations(block_num);
 
 create table if not exists evm_jailed(
     tx_id varchar(66) not null,
@@ -87,6 +90,7 @@ create table if not exists evm_coinbase_mint(
     amount numeric(48) not null,
     primary key(tx_id,validator,delegator)
 );
+create index idx_mnt_blknum on evm_coinbase_mint(block_num);
 
 create table if not exists evm_receipts(
     tx_id varchar(66) not null,
