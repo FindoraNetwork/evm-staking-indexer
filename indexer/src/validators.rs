@@ -56,7 +56,7 @@ pub async fn get_validator_votes(
     let page = params.page.unwrap_or(1);
     let page_size = params.page_size.unwrap_or(10);
 
-    let sql_total = r#"SELECT count(height) FROM evm_validators WHERE validator = $1
+    let sql_total = r#"SELECT count(block_num) FROM evm_validators WHERE validator = $1
         AND block_num >= (SELECT max(block_num) FROM evm_validators) - $2"#;
     let row = sqlx::query(sql_total)
         .bind(&params.0.validator)
@@ -112,7 +112,7 @@ pub async fn get_validators(
     let page = params.page.unwrap_or(1);
     let page_size = params.page_size.unwrap_or(10);
 
-    let mut sql_total = "SELECT count(height) \
+    let mut sql_total = "SELECT count(block_num) \
         FROM evm_validators ev \
         LEFT JOIN evm_stakes es \
         ON ev.validator=es.validator \

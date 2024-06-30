@@ -29,7 +29,7 @@ pub async fn get_receipts(
     let page = params.page.unwrap_or(1);
     let page_size = params.page_size.unwrap_or(10);
 
-    let mut sql_total = "SELECT count(height) FROM evm_receipts ".to_string();
+    let mut sql_total = "SELECT count(block_num) FROM evm_receipts ".to_string();
     let mut sql_query =
         "SELECT tx_id,block_id,block_num,from_addr,to_addr,tm,value FROM evm_receipts ".to_string();
 
