@@ -112,6 +112,7 @@ pub struct StakeResponse {
 
 #[derive(Serialize, Deserialize)]
 pub struct DelegateResponse {
+    pub tx_hash: String,
     pub block_hash: String,
     pub validator: String,
     pub delegator: String,
@@ -121,6 +122,7 @@ pub struct DelegateResponse {
 
 #[derive(Serialize, Deserialize)]
 pub struct UndelegateResponse {
+    pub tx_hash: String,
     pub block_hash: String,
     pub validator: String,
     pub delegator: String,
