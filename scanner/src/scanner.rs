@@ -5,11 +5,12 @@ use crossbeam::channel::bounded;
 use ethers::contract::{parse_log, EthEvent};
 use ethers::prelude::Middleware;
 use ethers::providers::{Http, Provider};
-use ethers::types::Address;
 use ethers::types::Bytes;
 use ethers::types::U256;
+use ethers::types::{Address, Block, Transaction};
 use ethers::utils::hex::encode_prefixed;
 use log::{debug, error, info};
+use reqwest::{Client, ClientBuilder, Url};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sqlx::types::chrono::DateTime;
@@ -39,6 +40,51 @@ const EVENT_UPDATE_VALIDATOR_TOPIC: &str =
 
 const EVENT_COINBASE_MINT_TOPIC: &str =
     "0xb2cf206b70e745484dd39dc6b8e6166ce07246bd00baa4bd059f15733b2130e9";
+
+pub struct FindoraRPC {
+    pub url: Url,
+    pub client: Client,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct GetBlockByNumerRequest {
+    pub id: i32,
+    pub jsonrpc: String,
+    pub method: String,
+    pub params: (String, bool),
+}
+impl GetBlockByNumerRequest {
+    pub fn new(block_num: u64, full: bool) -> Self {
+        GetBlockByNumerRequest {
+            id: 1,
+            jsonrpc: "2.0".into(),
+            method: "eth_getBlockByNumber".into(),
+            params: (format!("0x{:x}", block_num), full),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct GetBlockByNumberResponse {
+    pub jsonrpc: String,
+    pub id: i32,
+    pub result: Option<Block<Transaction>>,
+}
+
+impl FindoraRPC {
+    pub fn new(timeout: Duration, url: Url) -> Self {
+        let client = ClientBuilder::new().timeout(timeout).build().unwrap();
+        FindoraRPC { url, client }
+    }
+
+    pub async fn get_block_by_number(&self, block_num: u64) -> Result<Option<Block<Transaction>>> {
+        let req = GetBlockByNumerRequest::new(block_num, true);
+        let resp = self.client.post(self.url.clone()).json(&req).send().await?;
+        let block = resp.json::<GetBlockByNumberResponse>().await?;
+
+        Ok(block.result)
+    }
+}
 
 pub struct RpcCaller {
     pub retries: usize,
@@ -449,5 +495,21 @@ async fn task(
         }
         Err(ScannerError::BlockNotFound(h)) => error!("Block not found: {}", h),
         Err(e) => error!("Get block {} failed: {:?}", height, e),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_rpc() -> Result<()> {
+        // let url: Url = Url::parse("https://prod-mainnet.prod.findora.org:8545/").unwrap();
+        // let rpc = FindoraRPC::new(Duration::from_secs(60), url);
+        // let block = rpc.get_block_by_number(5000000).await?;
+        // if let Some(b) = block {
+        //     println!("{:?}", b);
+        // }
+        Ok(())
     }
 }
