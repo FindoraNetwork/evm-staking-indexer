@@ -28,13 +28,13 @@ pub async fn get_delegator_delegate_records(
         (
             format!("SELECT count(block_num) FROM evm_delegations WHERE delegator='{}'", delegator)
             ,
-            format!("SELECT block_id,validator,delegator,tm,amount FROM evm_delegations WHERE delegator='{}' ORDER BY tm DESC LIMIT {} OFFSET {}", delegator, page_size, (page-1)*page_size)
+            format!("SELECT tx_id,block_id,validator,delegator,tm,amount FROM evm_delegations WHERE delegator='{}' ORDER BY tm DESC LIMIT {} OFFSET {}", delegator, page_size, (page-1)*page_size)
         )
     } else {
         (
             "SELECT count(block_num) FROM evm_delegations".to_string()
             ,
-            format!("SELECT block_id,validator,delegator,tm,amount FROM evm_delegations ORDER BY tm DESC LIMIT {} OFFSET {}", page_size, (page-1)*page_size))
+            format!("SELECT tx_id,block_id,validator,delegator,tm,amount FROM evm_delegations ORDER BY tm DESC LIMIT {} OFFSET {}", page_size, (page-1)*page_size))
     };
 
     let row = sqlx::query(&sql_total).fetch_one(&mut *pool).await?;
@@ -43,6 +43,7 @@ pub async fn get_delegator_delegate_records(
     let mut delegates: Vec<DelegateResponse> = vec![];
     let rows = sqlx::query(&sql_query).fetch_all(&mut *pool).await?;
     for r in rows {
+        let tx_hash: String = r.try_get("tx_id")?;
         let block_hash: String = r.try_get("block_id")?;
         let validator: String = r.try_get("validator")?;
         let delegator: String = r.try_get("delegator")?;
@@ -50,6 +51,7 @@ pub async fn get_delegator_delegate_records(
         let tm: NaiveDateTime = r.try_get("tm")?;
 
         delegates.push(DelegateResponse {
+            tx_hash,
             block_hash,
             validator,
             delegator,
@@ -85,13 +87,13 @@ pub async fn get_validator_delegate_records(
         (
             format!("SELECT count(block_num) FROM evm_delegations WHERE validator='{}'", validator)
             ,
-            format!("SELECT block_id,validator,delegator,tm,amount FROM evm_delegations WHERE validator='{}' ORDER BY tm DESC LIMIT {} OFFSET {}", validator, page_size, (page-1)*page_size)
+            format!("SELECT tx_id,block_id,validator,delegator,tm,amount FROM evm_delegations WHERE validator='{}' ORDER BY tm DESC LIMIT {} OFFSET {}", validator, page_size, (page-1)*page_size)
         )
     } else {
         (
             "SELECT count(block_num) FROM evm_delegations".to_string()
             ,
-            format!("SELECT block_id,validator,delegator,tm,amount FROM evm_delegations ORDER BY tm DESC LIMIT {} OFFSET {}", page_size, (page-1)*page_size))
+            format!("SELECT tx_id,block_id,validator,delegator,tm,amount FROM evm_delegations ORDER BY tm DESC LIMIT {} OFFSET {}", page_size, (page-1)*page_size))
     };
 
     let row = sqlx::query(&sql_total).fetch_one(&mut *pool).await?;
@@ -100,6 +102,7 @@ pub async fn get_validator_delegate_records(
     let mut delegates: Vec<DelegateResponse> = vec![];
     let rows = sqlx::query(&sql_query).fetch_all(&mut *pool).await?;
     for r in rows {
+        let tx_hash: String = r.try_get("tx_id")?;
         let block_hash: String = r.try_get("block_id")?;
         let validator: String = r.try_get("validator")?;
         let delegator: String = r.try_get("delegator")?;
@@ -107,6 +110,7 @@ pub async fn get_validator_delegate_records(
         let tm: NaiveDateTime = r.try_get("tm")?;
 
         delegates.push(DelegateResponse {
+            tx_hash,
             block_hash,
             validator,
             delegator,
