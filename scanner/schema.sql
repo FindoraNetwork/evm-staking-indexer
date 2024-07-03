@@ -4,6 +4,21 @@ create table if not exists evm_last_height(
     primary key(tip)
 );
 
+create table if not exists evm_blocks(
+    block_id varchar(66) not null,
+    block_num bigint not null,
+    tm timestamp not null,
+    primary key(block_id)
+);
+
+create table if not exists evm_txs(
+    tx_id varchar(66) not null,
+    block_id varchar(66) not null,
+    block_num bigint not null,
+    tm timestamp not null,
+    primary key(tx_id)
+);
+
 create table if not exists evm_stakes(
     tx_id varchar(66) not null,
     block_id varchar(66) not null,
