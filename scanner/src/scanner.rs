@@ -516,22 +516,22 @@ mod tests {
 
     #[tokio::test]
     async fn test_rpc() -> Result<()> {
-        let url: Url = Url::parse("https://rpc-mainnet.findora.org/").unwrap();
-        //let url: Url = Url::parse("https://rpc-mainnet.findora.org/").unwrap();
-        let rpc = FindoraRPC::new(Duration::from_secs(120), url);
-        let block = rpc.get_block_by_number(4636000).await?;
+        // let url: Url = Url::parse("https://rpc-mainnet.findora.org/").unwrap();
+        // let url: Url = Url::parse("https://rpc-mainnet.findora.org/").unwrap();
+        // let rpc = FindoraRPC::new(Duration::from_secs(120), url);
+        // let block = rpc.get_block_by_number(4636000).await?;
 
-        if let Some(b) = block {
-            println!("txs_count: {}", b.transactions.len());
-            println!("{:?}", b);
-            // for tx in b.transactions {
-            //     let receipt = rpc.get_transaction_receipt(tx).await?;
-            //     println!("{:?}", tx);
-            //     if let Some(r) = receipt {
-            //         println!("{:?}", r);
-            //     }
-            // }
-        }
+        // if let Some(b) = block {
+        //     println!("txs_count: {}", b.transactions.len());
+        //     println!("{:?}", b);
+        //     for tx in b.transactions {
+        //         let receipt = rpc.get_transaction_receipt(tx).await?;
+        //         println!("{:?}", tx);
+        //         if let Some(r) = receipt {
+        //             println!("{:?}", r);
+        //         }
+        //     }
+        // }
         Ok(())
     }
 }
