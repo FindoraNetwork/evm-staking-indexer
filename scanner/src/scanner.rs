@@ -3,11 +3,11 @@ use crate::error::Result;
 use crate::error::ScannerError;
 use crossbeam::channel::bounded;
 use ethers::contract::{parse_log, EthEvent};
-use ethers::prelude::Middleware;
+use ethers::prelude::{Middleware, TransactionReceipt};
 use ethers::providers::{Http, Provider};
-use ethers::types::Bytes;
 use ethers::types::U256;
 use ethers::types::{Address, Block, Transaction};
+use ethers::types::{Bytes, TxHash};
 use ethers::utils::hex::encode_prefixed;
 use log::{debug, error, info};
 use reqwest::{Client, ClientBuilder, Url};
@@ -47,28 +47,29 @@ pub struct FindoraRPC {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct GetBlockByNumerRequest {
+struct EthRpcRequest<T> {
     pub id: i32,
     pub jsonrpc: String,
     pub method: String,
-    pub params: (String, bool),
+    pub params: T,
 }
-impl GetBlockByNumerRequest {
-    pub fn new(block_num: u64, full: bool) -> Self {
-        GetBlockByNumerRequest {
+
+impl<T> EthRpcRequest<T> {
+    pub fn body(method: &str, params: T) -> Self {
+        EthRpcRequest {
             id: 1,
             jsonrpc: "2.0".into(),
-            method: "eth_getBlockByNumber".into(),
-            params: (format!("0x{:x}", block_num), full),
+            method: method.to_string(),
+            params,
         }
     }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct GetBlockByNumberResponse {
+struct GetBlockByNumberResponse<T> {
     pub jsonrpc: String,
     pub id: i32,
-    pub result: Option<Block<Transaction>>,
+    pub result: Option<T>,
 }
 
 impl FindoraRPC {
@@ -77,12 +78,24 @@ impl FindoraRPC {
         FindoraRPC { url, client }
     }
 
-    pub async fn get_block_by_number(&self, block_num: u64) -> Result<Option<Block<Transaction>>> {
-        let req = GetBlockByNumerRequest::new(block_num, true);
+    pub async fn get_block_by_number(&self, block_num: u64) -> Result<Option<Block<TxHash>>> {
+        let params = (format!("0x{:x}", block_num), false);
+        let req = EthRpcRequest::body("eth_getBlockByNumber", params);
         let resp = self.client.post(self.url.clone()).json(&req).send().await?;
-        let block = resp.json::<GetBlockByNumberResponse>().await?;
-
+        let block = resp
+            .json::<GetBlockByNumberResponse<Block<TxHash>>>()
+            .await?;
         Ok(block.result)
+    }
+
+    pub async fn get_transaction_receipt(&self, tx: TxHash) -> Result<Option<TransactionReceipt>> {
+        let params = vec![tx];
+        let req = EthRpcRequest::body("eth_getTransactionReceipt", params);
+        let resp = self.client.post(self.url.clone()).json(&req).send().await?;
+        let receipt = resp
+            .json::<GetBlockByNumberResponse<TransactionReceipt>>()
+            .await?;
+        Ok(receipt.result)
     }
 }
 
@@ -453,7 +466,7 @@ impl Scanner {
                 info!("Fast syncing complete.");
                 loop {
                     if let Ok(h) = self.caller.storage.get_tip().await {
-                        height = h as u64 + 1;
+                        height = h + 1;
                     }
 
                     match self.caller.get_block_retried(height).await {
@@ -468,8 +481,7 @@ impl Scanner {
                             error!("Get block {} error: {:?}", height, e);
                         }
                     }
-
-                    tokio::time::sleep(interval).await;
+                    //tokio::time::sleep(interval).await;
                 }
             }
         }
@@ -504,12 +516,22 @@ mod tests {
 
     #[tokio::test]
     async fn test_rpc() -> Result<()> {
-        // let url: Url = Url::parse("https://prod-mainnet.prod.findora.org:8545/").unwrap();
-        // let rpc = FindoraRPC::new(Duration::from_secs(60), url);
-        // let block = rpc.get_block_by_number(5000000).await?;
-        // if let Some(b) = block {
-        //     println!("{:?}", b);
-        // }
+        let url: Url = Url::parse("https://rpc-mainnet.findora.org/").unwrap();
+        //let url: Url = Url::parse("https://rpc-mainnet.findora.org/").unwrap();
+        let rpc = FindoraRPC::new(Duration::from_secs(120), url);
+        let block = rpc.get_block_by_number(4636000).await?;
+
+        if let Some(b) = block {
+            println!("txs_count: {}", b.transactions.len());
+            println!("{:?}", b);
+            // for tx in b.transactions {
+            //     let receipt = rpc.get_transaction_receipt(tx).await?;
+            //     println!("{:?}", tx);
+            //     if let Some(r) = receipt {
+            //         println!("{:?}", r);
+            //     }
+            // }
+        }
         Ok(())
     }
 }

@@ -24,6 +24,38 @@ impl Storage {
         Ok(height as u64)
     }
 
+    pub async fn upsert_block(
+        &self,
+        block_id: &str,
+        block_num: i64,
+        tm: NaiveDateTime,
+    ) -> Result<()> {
+        sqlx::query("insert into evm_blocks values($1,$2,$3) on conflict(block_id) do update set block_num=$2,tm=$3")
+            .bind(block_id)
+            .bind(block_num)
+            .bind(tm)
+            .execute(&self.pool)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn upsert_tx(
+        &self,
+        tx_id: &str,
+        block_id: &str,
+        block_num: i64,
+        tm: NaiveDateTime,
+    ) -> Result<()> {
+        sqlx::query("insert into evm_txs values($1,$2,$3,$4) on conflict(tx_id) do update set block_id=$2,block_num=$3,tm=$4")
+            .bind(tx_id)
+            .bind(block_id)
+            .bind(block_num)
+            .bind(tm)
+            .execute(&self.pool)
+            .await?;
+        Ok(())
+    }
+
     pub async fn upsert_tip(&self, height: i64) -> Result<()> {
         sqlx::query(
             "insert into evm_last_height values($1,$2) on conflict(tip) do update set height=$2",
