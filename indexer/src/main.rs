@@ -48,7 +48,9 @@ struct IndexerConfig {
     pub reward: String,
     pub listen: String,
     pub db_url: String,
+    pub redis_url: String,
 }
+
 impl IndexerConfig {
     pub fn new(file_path: &str) -> Result<Self> {
         let mut f = File::open(file_path)?;
@@ -61,6 +63,7 @@ impl IndexerConfig {
 
 struct AppState {
     pub pool: PgPool,
+    pub redis: redis::Client,
     pub staking: StakingContract<Provider<Http>>,
     pub reward: RewardContract<Provider<Http>>,
 }
@@ -87,8 +90,10 @@ async fn main() -> Result<()> {
         .expect("can't connect to database");
     info!("Connecting db...ok");
 
+    let redis_client = redis::Client::open(config.redis_url)?;
     let app_state = Arc::new(AppState {
         pool,
+        redis: redis_client,
         staking,
         reward,
     });
