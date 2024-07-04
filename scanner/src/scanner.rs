@@ -6,7 +6,7 @@ use ethers::contract::{parse_log, EthEvent};
 use ethers::prelude::{Middleware, TransactionReceipt};
 use ethers::providers::{Http, Provider};
 use ethers::types::U256;
-use ethers::types::{Address, Block, Transaction};
+use ethers::types::{Address, Block};
 use ethers::types::{Bytes, TxHash};
 use ethers::utils::hex::encode_prefixed;
 use log::{debug, error, info};
@@ -41,6 +41,7 @@ const EVENT_UPDATE_VALIDATOR_TOPIC: &str =
 const EVENT_COINBASE_MINT_TOPIC: &str =
     "0xb2cf206b70e745484dd39dc6b8e6166ce07246bd00baa4bd059f15733b2130e9";
 
+#[allow(dead_code)]
 pub struct FindoraRPC {
     pub url: Url,
     pub client: Client,
@@ -54,6 +55,7 @@ struct EthRpcRequest<T> {
     pub params: T,
 }
 
+#[allow(dead_code)]
 impl<T> EthRpcRequest<T> {
     pub fn body(method: &str, params: T) -> Self {
         EthRpcRequest {
@@ -72,6 +74,7 @@ struct GetBlockByNumberResponse<T> {
     pub result: Option<T>,
 }
 
+#[allow(dead_code)]
 impl FindoraRPC {
     pub fn new(timeout: Duration, url: Url) -> Self {
         let client = ClientBuilder::new().timeout(timeout).build().unwrap();
@@ -445,7 +448,7 @@ impl Scanner {
         Ok(succeed_cnt.load(Ordering::Acquire))
     }
 
-    pub async fn run(&self, start: u64, interval: Duration, single: bool) -> Result<()> {
+    pub async fn run(&self, start: u64, _interval: Duration, single: bool) -> Result<()> {
         match single {
             true => {
                 info!("Single syncing...");

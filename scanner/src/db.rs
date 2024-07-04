@@ -9,7 +9,7 @@ use sqlx::{PgPool, Row};
 pub struct Storage {
     pool: PgPool,
 }
-
+#[allow(dead_code)]
 impl Storage {
     pub fn new(pool: PgPool) -> Self {
         Self { pool }
