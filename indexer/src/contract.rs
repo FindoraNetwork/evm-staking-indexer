@@ -196,7 +196,6 @@ pub async fn get_delegator_sum(
     (SELECT sum(amount) FROM evm_coinbase_mint WHERE delegator='{}') as sc",
         address, address, address
     );
-    println!("{:?}", sql_query);
     let row = sqlx::query(&sql_query).fetch_one(&mut *pool).await?;
     let sum_delegate: BigDecimal = row.try_get("sd").unwrap_or_default();
     let sum_undelegate: BigDecimal = row.try_get("sund").unwrap_or_default();
