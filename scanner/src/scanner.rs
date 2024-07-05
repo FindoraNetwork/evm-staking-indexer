@@ -448,7 +448,7 @@ impl Scanner {
         Ok(succeed_cnt.load(Ordering::Acquire))
     }
 
-    pub async fn run(&self, start: u64, _interval: Duration, single: bool) -> Result<()> {
+    pub async fn run(&self, start: u64, interval: Duration, single: bool) -> Result<()> {
         match single {
             true => {
                 info!("Single syncing...");
@@ -484,7 +484,7 @@ impl Scanner {
                             error!("Get block {} error: {:?}", height, e);
                         }
                     }
-                    //tokio::time::sleep(interval).await;
+                    tokio::time::sleep(interval).await;
                 }
             }
         }
