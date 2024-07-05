@@ -25,10 +25,11 @@ pub async fn get_delegator_undelegate_records(
     let page_size = params.page_size.unwrap_or(10);
 
     let (sql_total, sql_query) = if let Some(delegator) = params.0.delegator {
+        let delegator_lower = delegator.to_lowercase();
         (
-            format!("SELECT count(block_num) FROM evm_undelegations WHERE delegator='{}'", delegator)
+            format!("SELECT count(block_num) FROM evm_undelegations WHERE delegator='{}'", delegator_lower)
             ,
-            format!("SELECT tx_id,block_id,validator,delegator,tm,amount FROM evm_undelegations WHERE delegator='{}' ORDER BY tm DESC LIMIT {} OFFSET {}", delegator, page_size, (page-1)*page_size)
+            format!("SELECT tx_id,block_id,validator,delegator,tm,amount FROM evm_undelegations WHERE delegator='{}' ORDER BY tm DESC LIMIT {} OFFSET {}", delegator_lower, page_size, (page-1)*page_size)
         )
     } else {
         (
