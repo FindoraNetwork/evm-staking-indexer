@@ -114,6 +114,7 @@ pub struct StakeResponse {
 pub struct DelegateResponse {
     pub tx_hash: String,
     pub block_hash: String,
+    pub block_num: i64,
     pub validator: String,
     pub delegator: String,
     pub amount: String,
@@ -124,6 +125,7 @@ pub struct DelegateResponse {
 pub struct UndelegateResponse {
     pub tx_hash: String,
     pub block_hash: String,
+    pub block_num: i64,
     pub validator: String,
     pub delegator: String,
     pub amount: String,

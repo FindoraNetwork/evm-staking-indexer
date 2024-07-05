@@ -29,13 +29,13 @@ pub async fn get_delegator_undelegate_records(
         (
             format!("SELECT count(block_num) FROM evm_undelegations WHERE delegator='{}'", delegator_lower)
             ,
-            format!("SELECT tx_id,block_id,validator,delegator,tm,amount FROM evm_undelegations WHERE delegator='{}' ORDER BY tm DESC LIMIT {} OFFSET {}", delegator_lower, page_size, (page-1)*page_size)
+            format!("SELECT tx_id,block_id,block_num,validator,delegator,tm,amount FROM evm_undelegations WHERE delegator='{}' ORDER BY tm DESC LIMIT {} OFFSET {}", delegator_lower, page_size, (page-1)*page_size)
         )
     } else {
         (
             "SELECT count(block_num) FROM evm_undelegations".to_string()
             ,
-            format!("SELECT tx_id,block_id,validator,delegator,tm,amount FROM evm_undelegations ORDER BY tm DESC LIMIT {} OFFSET {}", page_size, (page-1)*page_size))
+            format!("SELECT tx_id,block_id,block_num,validator,delegator,tm,amount FROM evm_undelegations ORDER BY tm DESC LIMIT {} OFFSET {}", page_size, (page-1)*page_size))
     };
 
     let row = sqlx::query(&sql_total).fetch_one(&mut *pool).await?;
@@ -46,6 +46,7 @@ pub async fn get_delegator_undelegate_records(
     for r in rows {
         let tx_hash: String = r.try_get("tx_id")?;
         let block_hash: String = r.try_get("block_id")?;
+        let block_num: i64 = r.try_get("block_num")?;
         let validator: String = r.try_get("validator")?;
         let delegator: String = r.try_get("delegator")?;
         let amount: BigDecimal = r.try_get("amount")?;
@@ -54,6 +55,7 @@ pub async fn get_delegator_undelegate_records(
         delegates.push(UndelegateResponse {
             tx_hash,
             block_hash,
+            block_num,
             validator,
             delegator,
             amount: amount.to_string(),
@@ -88,13 +90,13 @@ pub async fn get_validator_undelegate_records(
         (
             format!("SELECT count(block_num) FROM evm_undelegations WHERE validator='{}'", validator)
             ,
-            format!("SELECT tx_id,block_id,validator,delegator,tm,amount FROM evm_undelegations WHERE validator='{}' ORDER BY tm DESC LIMIT {} OFFSET {}", validator, page_size, (page-1)*page_size)
+            format!("SELECT tx_id,block_id,block_num,validator,delegator,tm,amount FROM evm_undelegations WHERE validator='{}' ORDER BY tm DESC LIMIT {} OFFSET {}", validator, page_size, (page-1)*page_size)
         )
     } else {
         (
             "SELECT count(block_num) FROM evm_undelegations".to_string()
             ,
-            format!("SELECT tx_id,block_id,validator,delegator,tm,amount FROM evm_undelegations ORDER BY tm DESC LIMIT {} OFFSET {}", page_size, (page-1)*page_size))
+            format!("SELECT tx_id,block_id,block_num,validator,delegator,tm,amount FROM evm_undelegations ORDER BY tm DESC LIMIT {} OFFSET {}", page_size, (page-1)*page_size))
     };
 
     let row = sqlx::query(&sql_total).fetch_one(&mut *pool).await?;
@@ -105,6 +107,7 @@ pub async fn get_validator_undelegate_records(
     for r in rows {
         let tx_hash: String = r.try_get("tx_id")?;
         let block_hash: String = r.try_get("block_id")?;
+        let block_num: i64 = r.try_get("block_num")?;
         let validator: String = r.try_get("validator")?;
         let delegator: String = r.try_get("delegator")?;
         let amount: BigDecimal = r.try_get("amount")?;
@@ -113,6 +116,7 @@ pub async fn get_validator_undelegate_records(
         delegates.push(UndelegateResponse {
             tx_hash,
             block_hash,
+            block_num,
             validator,
             delegator,
             amount: amount.to_string(),
