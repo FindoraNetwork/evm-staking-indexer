@@ -18,7 +18,7 @@ use sqlx::{Pool, Postgres};
 use std::env;
 use std::time::Duration;
 
-const DEFAULT_INTERVAL: u64 = 5; // 5s
+const DEFAULT_INTERVAL: u64 = 3; // 3s
 const DEFAULT_RPC_RETRIES: usize = 3;
 
 #[derive(Parser, Debug)]
