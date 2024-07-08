@@ -19,7 +19,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 const DEFAULT_RPC_RETRIES: usize = 3;
-const DEFAULT_INTERVAL: u64 = 15; // 15s
+const DEFAULT_INTERVAL: u64 = 14; // 14s
 
 abigen!(RewardContract, "../abi/Reward.json");
 abigen!(StakingContract, "../abi/Staking.json");

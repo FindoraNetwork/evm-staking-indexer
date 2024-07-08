@@ -1,4 +1,4 @@
-evm_rpc = "web3 endopoint"
-staking = "staking contract address"
-reward = "reward contrat address"
-db_url = "postgres://postgres:12345678@localhost/postgres"
+evm_rpc = "https://rpc-mainnet.findora.org/"
+staking = "0x7a598dEf738a01D771fF92Be33064D5c5E0BC12C"
+reward = "0xEDA79C4dA47E9b27820Ef244aa2af7a50657e443"
+db_url = "postgres://postgres:csq2400306@localhost/postgres"

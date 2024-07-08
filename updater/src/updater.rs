@@ -2,7 +2,7 @@ use crate::db::Storage;
 use crate::error::Result;
 use crate::{RewardContract, StakingContract, DEFAULT_INTERVAL};
 use crossbeam::channel::bounded;
-use ethers::prelude::{Http, Provider};
+use ethers::prelude::{Http, Provider, H160};
 use ethers::providers::Middleware;
 use ethers::types::Address;
 use ethers::utils::hex::encode_prefixed;
@@ -68,7 +68,7 @@ impl Updater {
         }
     }
 
-    pub async fn update_validators(&self, validators: Vec<String>) -> Result<u64> {
+    pub async fn update_validators(&self, validators: Vec<H160>) -> Result<u64> {
         let block_num = self.caller.provider.get_block_number().await?.as_u64();
 
         let count = validators.len();
@@ -77,8 +77,7 @@ impl Updater {
 
         let producer_handle = tokio::task::spawn_blocking(move || {
             for vaddr in validators {
-                let addr = Address::from_str(&vaddr).unwrap();
-                let fut = update_validator_task(caller_cloned.clone(), block_num, addr);
+                let fut = update_validator_task(caller_cloned.clone(), block_num, vaddr);
                 sender.send(Some(fut)).unwrap();
             }
 
@@ -108,7 +107,8 @@ impl Updater {
 
     pub async fn run(&self) -> Result<()> {
         loop {
-            let validators = self.caller.storage.get_validator_list().await?;
+            let list = self.caller.staking.get_validators_list().call().await?;
+            let validators = list.into_iter().map(|v| v.addr).collect::<Vec<H160>>();
             if validators.len() > 0 {
                 match self.update_validators(validators).await {
                     Ok(block_num) => {
