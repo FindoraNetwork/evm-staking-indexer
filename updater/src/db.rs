@@ -58,6 +58,7 @@ impl Storage {
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub async fn get_validator_list(&self) -> Result<Vec<String>> {
         let rows = sqlx::query("SELECT DISTINCT validator FROM evm_stakes")
             .fetch_all(&self.pool)
