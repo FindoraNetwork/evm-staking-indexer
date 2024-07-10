@@ -159,7 +159,7 @@ pub async fn get_validators(
     }
 
     let row = sqlx::query(&sql_total).fetch_one(&mut *pool).await?;
-    let total: i64 = row.try_get("count")?;
+    let mut total: i64 = row.try_get("count")?;
 
     let mut validators: Vec<ValidatorResponse> = vec![];
     let rows = sqlx::query(&sql_query).fetch_all(&mut *pool).await?;
@@ -225,6 +225,7 @@ pub async fn get_validators(
         let begin_block: i64 = r.try_get("begin_block")?;
         let unjail_time: NaiveDateTime = r.try_get("unjail_time")?;
         let memo: Value = r.try_get("memo")?;
+        total = 1;
         validators.push(ValidatorResponse {
             validator,
             staker,
