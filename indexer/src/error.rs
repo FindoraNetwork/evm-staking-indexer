@@ -1,5 +1,6 @@
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
+use sqlx::Error::RowNotFound;
 
 #[derive(Debug)]
 pub enum IndexerError {
@@ -60,7 +61,10 @@ impl IntoResponse for IndexerError {
     fn into_response(self) -> Response {
         let err_msg = match self {
             IndexerError::IndexerCustom(e) => e,
-            IndexerError::IndexerDBError(e) => e.to_string(),
+            IndexerError::IndexerDBError(e) => match e {
+                RowNotFound => return (StatusCode::NOT_FOUND, "not found").into_response(),
+                _ => e.to_string(),
+            },
             IndexerError::IndexerIOError(e) => e.to_string(),
             IndexerError::IndexerTomlDeError(e) => e.to_string(),
             IndexerError::IndexerHexError(e) => e.to_string(),
