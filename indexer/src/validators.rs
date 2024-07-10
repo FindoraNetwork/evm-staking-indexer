@@ -111,7 +111,7 @@ pub async fn get_validators(
     let mut pool = state.pool.acquire().await?;
     let page = params.page.unwrap_or(1);
     let page_size = params.page_size.unwrap_or(10);
-
+    let mut single = false;
     let mut sql_total = "SELECT count(ev.block_num) \
         FROM evm_stakes es \
         LEFT JOIN evm_validators ev \
@@ -129,6 +129,7 @@ pub async fn get_validators(
     let mut query_params: Vec<String> = vec![];
     if let Some(ref validator) = params.0.validator {
         query_params.push(format!("ev.validator='{}' ", validator));
+        single = true;
     }
     if let Some(online) = params.0.online {
         query_params.push(format!("ev.active={} ", online))
@@ -163,6 +164,52 @@ pub async fn get_validators(
     let mut validators: Vec<ValidatorResponse> = vec![];
     let rows = sqlx::query(&sql_query).fetch_all(&mut *pool).await?;
     for r in rows {
+        let validator: String = r.try_get("validator")?;
+        let staker: String = r.try_get("staker")?;
+        let active: bool = r.try_get("active")?;
+        let jailed: bool = r.try_get("jailed")?;
+        let should_vote: i32 = r.try_get("should_vote")?;
+        let voted: i32 = r.try_get("voted")?;
+        let pubkey: String = r.try_get("pubkey")?;
+        let pubkey_type: i32 = r.try_get("pubkey_type")?;
+        let rate: BigDecimal = r.try_get("rate")?;
+        let power: BigDecimal = r.try_get("power")?;
+        let unbound_amount: BigDecimal = r.try_get("unbound")?;
+        let punish_rate: BigDecimal = r.try_get("punish_rate")?;
+        let begin_block: i64 = r.try_get("begin_block")?;
+        let unjail_time: NaiveDateTime = r.try_get("unjail_time")?;
+        let memo: Value = r.try_get("memo")?;
+        validators.push(ValidatorResponse {
+            validator,
+            staker,
+            active,
+            jailed,
+            should_vote,
+            voted,
+            pubkey,
+            pubkey_type,
+            rate: rate.to_string(),
+            power: power.to_string(),
+            unbound_amount: unbound_amount.to_string(),
+            punish_rate: punish_rate.to_string(),
+            begin_block,
+            unjail_time: unjail_time.and_utc().timestamp(),
+            memo,
+        })
+    }
+    if single && validators.len() == 0 {
+        let slq_query_single = r#"SELECT ev.validator,ev.pubkey,ev.pubkey_type,ev.rate,ev.staker,
+            ev.power,ev.unbound,ev.punish_rate,ev.begin_block,ev.active,ev.jailed,ev.unjail_time,
+            ev.should_vote,ev.voted,es.memo
+            FROM evm_validators ev
+            LEFT JOIN evm_stakes es
+            ON ev.validator = es.validator
+            WHERE ev.validator=$1
+            ORDER BY ev.block_num DESC LIMIT 1"#;
+        let r = sqlx::query(&slq_query_single)
+            .bind(&params.0.validator)
+            .fetch_one(&mut *pool)
+            .await?;
         let validator: String = r.try_get("validator")?;
         let staker: String = r.try_get("staker")?;
         let active: bool = r.try_get("active")?;
