@@ -198,15 +198,16 @@ pub async fn get_validators(
         })
     }
     if single && validators.len() == 0 {
-        let slq_query_single = r#"SELECT ev.validator,ev.pubkey,ev.pubkey_type,ev.rate,ev.staker,
-            ev.power,ev.unbound,ev.punish_rate,ev.begin_block,ev.active,ev.jailed,ev.unjail_time,
-            ev.should_vote,ev.voted,es.memo
-            FROM evm_validators ev
-            LEFT JOIN evm_stakes es
-            ON ev.validator = es.validator
-            WHERE ev.validator=$1
-            ORDER BY ev.block_num DESC LIMIT 1"#;
-        let r = sqlx::query(&slq_query_single)
+        let sql_query_memo = r#"SELECT memo from evm_stakes WHERE validator=$1"#;
+        let row = sqlx::query(&sql_query_memo)
+            .bind(&params.0.validator)
+            .fetch_one(&mut *pool)
+            .await?;
+        let memo: Value = row.try_get("memo")?;
+
+        let slq_query_validator = r#"SELECT validator,pubkey,pubkey_type,rate,staker,power,unbound,punish_rate,begin_block,active,jailed,unjail_time,should_vote,voted
+            FROM evm_validators WHERE validator=$1 ORDER BY block_num DESC LIMIT 1"#;
+        let r = sqlx::query(&slq_query_validator)
             .bind(&params.0.validator)
             .fetch_one(&mut *pool)
             .await?;
@@ -224,7 +225,7 @@ pub async fn get_validators(
         let punish_rate: BigDecimal = r.try_get("punish_rate")?;
         let begin_block: i64 = r.try_get("begin_block")?;
         let unjail_time: NaiveDateTime = r.try_get("unjail_time")?;
-        let memo: Value = r.try_get("memo")?;
+
         total = 1;
         validators.push(ValidatorResponse {
             validator,
