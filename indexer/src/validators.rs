@@ -158,46 +158,9 @@ pub async fn get_validators(
         );
     }
 
-    let row = sqlx::query(&sql_total).fetch_one(&mut *pool).await?;
-    let mut total: i64 = row.try_get("count")?;
-
     let mut validators: Vec<ValidatorResponse> = vec![];
-    let rows = sqlx::query(&sql_query).fetch_all(&mut *pool).await?;
-    for r in rows {
-        let validator: String = r.try_get("validator")?;
-        let staker: String = r.try_get("staker")?;
-        let active: bool = r.try_get("active")?;
-        let jailed: bool = r.try_get("jailed")?;
-        let should_vote: i32 = r.try_get("should_vote")?;
-        let voted: i32 = r.try_get("voted")?;
-        let pubkey: String = r.try_get("pubkey")?;
-        let pubkey_type: i32 = r.try_get("pubkey_type")?;
-        let rate: BigDecimal = r.try_get("rate")?;
-        let power: BigDecimal = r.try_get("power")?;
-        let unbound_amount: BigDecimal = r.try_get("unbound")?;
-        let punish_rate: BigDecimal = r.try_get("punish_rate")?;
-        let begin_block: i64 = r.try_get("begin_block")?;
-        let unjail_time: NaiveDateTime = r.try_get("unjail_time")?;
-        let memo: Value = r.try_get("memo")?;
-        validators.push(ValidatorResponse {
-            validator,
-            staker,
-            active,
-            jailed,
-            should_vote,
-            voted,
-            pubkey,
-            pubkey_type,
-            rate: rate.to_string(),
-            power: power.to_string(),
-            unbound_amount: unbound_amount.to_string(),
-            punish_rate: punish_rate.to_string(),
-            begin_block,
-            unjail_time: unjail_time.and_utc().timestamp(),
-            memo,
-        })
-    }
-    if single && validators.len() == 0 {
+    let mut total: i64 = 0;
+    if single {
         let sql_query_memo = r#"SELECT memo from evm_stakes WHERE validator=$1"#;
         let row = sqlx::query(&sql_query_memo)
             .bind(&params.0.validator)
@@ -244,6 +207,44 @@ pub async fn get_validators(
             unjail_time: unjail_time.and_utc().timestamp(),
             memo,
         })
+    } else {
+        let row = sqlx::query(&sql_total).fetch_one(&mut *pool).await?;
+        total = row.try_get("count")?;
+        let rows = sqlx::query(&sql_query).fetch_all(&mut *pool).await?;
+        for r in rows {
+            let validator: String = r.try_get("validator")?;
+            let staker: String = r.try_get("staker")?;
+            let active: bool = r.try_get("active")?;
+            let jailed: bool = r.try_get("jailed")?;
+            let should_vote: i32 = r.try_get("should_vote")?;
+            let voted: i32 = r.try_get("voted")?;
+            let pubkey: String = r.try_get("pubkey")?;
+            let pubkey_type: i32 = r.try_get("pubkey_type")?;
+            let rate: BigDecimal = r.try_get("rate")?;
+            let power: BigDecimal = r.try_get("power")?;
+            let unbound_amount: BigDecimal = r.try_get("unbound")?;
+            let punish_rate: BigDecimal = r.try_get("punish_rate")?;
+            let begin_block: i64 = r.try_get("begin_block")?;
+            let unjail_time: NaiveDateTime = r.try_get("unjail_time")?;
+            let memo: Value = r.try_get("memo")?;
+            validators.push(ValidatorResponse {
+                validator,
+                staker,
+                active,
+                jailed,
+                should_vote,
+                voted,
+                pubkey,
+                pubkey_type,
+                rate: rate.to_string(),
+                power: power.to_string(),
+                unbound_amount: unbound_amount.to_string(),
+                punish_rate: punish_rate.to_string(),
+                begin_block,
+                unjail_time: unjail_time.and_utc().timestamp(),
+                memo,
+            })
+        }
     }
 
     Ok(Json(QueryResult {
