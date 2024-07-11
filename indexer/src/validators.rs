@@ -14,8 +14,6 @@ use sqlx::Row;
 use std::ops::{Add, Sub};
 use std::sync::Arc;
 
-const SQL_QUERY1: &'static str = "ORDER BY power DESC LIMIT 1 OFFSET 0";
-
 #[derive(Serialize, Deserialize)]
 pub struct ValidatorSumRewardParams {
     pub validator: String,
@@ -111,66 +109,28 @@ pub async fn get_validators(
     let mut pool = state.pool.acquire().await?;
     let page = params.page.unwrap_or(1);
     let page_size = params.page_size.unwrap_or(10);
-    let mut single = false;
-    let mut sql_total = "SELECT count(ev.block_num) \
-        FROM evm_stakes es \
-        LEFT JOIN evm_validators ev \
-        ON es.validator=ev.validator \
-        WHERE ev.block_num=(SELECT max(block_num) FROM evm_validators) "
-        .to_string();
-
-    let mut sql_query = "SELECT ev.validator,ev.pubkey,ev.pubkey_type,ev.rate,ev.staker,ev.power,\
-        ev.unbound,ev.punish_rate,ev.begin_block,ev.active,ev.jailed,ev.unjail_time,ev.should_vote,ev.voted,es.memo \
-        FROM evm_stakes es \
-        LEFT JOIN evm_validators ev \
-        ON es.validator=ev.validator \
-        WHERE ev.block_num=(SELECT max(block_num) FROM evm_validators) ".to_string();
-
-    let mut query_params: Vec<String> = vec![];
-    if let Some(ref validator) = params.0.validator {
-        query_params.push(format!("ev.validator='{}' ", validator));
-        single = true;
-    }
-    if let Some(online) = params.0.online {
-        query_params.push(format!("ev.active={} ", online))
-    }
-    if let Some(offline) = params.0.offline {
-        query_params.push(format!("ev.jailed={} ", offline))
-    }
-    if !query_params.is_empty() {
-        sql_total = sql_total
-            .add("AND ")
-            .add(query_params.join("AND ").as_str());
-        sql_query = sql_query
-            .add("AND ")
-            .add(query_params.join("AND ").as_str());
-    }
-    if params.0.validator.is_some() {
-        sql_query = sql_query.add(SQL_QUERY1);
-    } else {
-        sql_query = sql_query.add(
-            format!(
-                "ORDER BY power DESC LIMIT {} OFFSET {}",
-                page_size,
-                (page - 1) * page_size
-            )
-            .as_str(),
-        );
-    }
 
     let mut validators: Vec<ValidatorResponse> = vec![];
     let mut total: i64 = 0;
-    if single {
-        let sql_query_memo = r#"SELECT memo from evm_stakes WHERE validator=$1"#;
+    if params.0.validator.is_some() {
+        let sql_query_memo = r#"SELECT memo FROM evm_stakes WHERE validator=$1"#;
         let row = sqlx::query(&sql_query_memo)
             .bind(&params.0.validator)
             .fetch_one(&mut *pool)
             .await?;
         let memo: Value = row.try_get("memo")?;
 
-        let slq_query_validator = r#"SELECT validator,pubkey,pubkey_type,rate,staker,power,unbound,punish_rate,begin_block,active,jailed,unjail_time,should_vote,voted
-            FROM evm_validators WHERE validator=$1 ORDER BY block_num DESC LIMIT 1"#;
-        let r = sqlx::query(&slq_query_validator)
+        let sql_latest = r#"SELECT max(block_num) mb FROM evm_validators WHERE validator=$1"#;
+        let row = sqlx::query(&sql_latest)
+            .bind(&params.0.validator)
+            .fetch_one(&mut *pool)
+            .await?;
+        let max_block: i64 = row.try_get("mb")?;
+
+        let sql_validator = r#"SELECT validator,pubkey,pubkey_type,rate,staker,power,unbound,punish_rate,
+            begin_block,active,jailed,unjail_time,should_vote,voted FROM evm_validators WHERE block_num=$1 AND validator=$2"#;
+        let r = sqlx::query(&sql_validator)
+            .bind(max_block)
             .bind(&params.0.validator)
             .fetch_one(&mut *pool)
             .await?;
@@ -208,8 +168,43 @@ pub async fn get_validators(
             memo,
         })
     } else {
+        let mut sql_total = "SELECT count(ev.block_num) cnt,max(ev.block_num) mb FROM evm_validators ev WHERE ev.block_num=(SELECT max(block_num) FROM evm_validators) ".to_string();
+        let mut query_params: Vec<String> = vec![];
+        if let Some(ref validator) = params.0.validator {
+            query_params.push(format!("ev.validator='{}' ", validator));
+        }
+        if let Some(online) = params.0.online {
+            query_params.push(format!("ev.active={} ", online))
+        }
+        if let Some(offline) = params.0.offline {
+            query_params.push(format!("ev.jailed={} ", offline))
+        }
+        if !query_params.is_empty() {
+            sql_total = sql_total
+                .add("AND ")
+                .add(query_params.join("AND ").as_str());
+        }
         let row = sqlx::query(&sql_total).fetch_one(&mut *pool).await?;
-        total = row.try_get("count")?;
+        total = row.try_get("cnt")?;
+        let max_block: i64 = row.try_get("mb")?;
+
+        let mut sql_query = format!("SELECT ev.validator,ev.pubkey,ev.pubkey_type,ev.rate,ev.staker,ev.power,\
+        ev.unbound,ev.punish_rate,ev.begin_block,ev.active,ev.jailed,ev.unjail_time,ev.should_vote,ev.voted,es.memo \
+        FROM evm_stakes es LEFT JOIN evm_validators ev ON es.validator=ev.validator WHERE ev.block_num={} ", max_block);
+        if !query_params.is_empty() {
+            sql_query = sql_query
+                .add("AND ")
+                .add(query_params.join("AND ").as_str());
+        }
+        sql_query = sql_query.add(
+            format!(
+                "ORDER BY power DESC LIMIT {} OFFSET {}",
+                page_size,
+                (page - 1) * page_size
+            )
+            .as_str(),
+        );
+
         let rows = sqlx::query(&sql_query).fetch_all(&mut *pool).await?;
         for r in rows {
             let validator: String = r.try_get("validator")?;
